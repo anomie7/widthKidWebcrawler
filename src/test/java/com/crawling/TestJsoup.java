@@ -3,10 +3,13 @@ package com.crawling;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,6 +17,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -23,7 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @SpringBootTest
 @Slf4j
 public class TestJsoup {
-
+	
+	@Autowired
+	private InterParkRepository interparkRepository;
+	
 	// @Test
 	// public void testWemapeCrawling() {
 	// Document doc;
@@ -46,39 +53,58 @@ public class TestJsoup {
 		final String[] CategoryArray = { "Fam_M", "Fam_P", "Fam_C", "Fam_L" };
 		final String URL = "http://ticket.interpark.com/TPGoodsList.asp?Ca=Fam&SubCa=";
 		final String cssQuery = ".Rk_gen2 .stit tbody tr";
-		List<Map<String, Object>> ls = new ArrayList<>();
 		Elements el = null;
 		try {
-			for (String subCa : CategoryArray) {
-				Map<String, Object> map = new HashMap<>();
-				doc = Jsoup.connect(URL + subCa).get();
-				assertEquals("크롤링한 페이지의 타이틀이 동일하지 않습니다.", doc.title(), "싸니까 믿으니까 - 인터파크 티켓");
+			for (int j = 0; j < CategoryArray.length; j++) {
+				List<InterParkDTO> ls = new ArrayList<>();
+				doc = Jsoup.connect(URL + CategoryArray[j]).get();
 				el = doc.select(cssQuery);
 				for (Element element : el) {
-					String tmp = element.getElementsByClass("RKtxt").select("a").text();
-					map.put("name", tmp);
+					String name = element.getElementsByClass("RKtxt").select("a").text();
+					String location = element.getElementsByClass("Rkdate").select("a").text();
+					String date = element.child(3).text();
+					String groupCode = element.select(".fw_bold a").attr("href");
+					
+					//groupCode 추출해서 interParkCode로 변환
+					String pattern = "^*.*=";
+					Pattern r = Pattern.compile(pattern);
+					Matcher m = r.matcher(groupCode);
+					String interparkCode = m.replaceAll("");
+					
+					String[] tm = date.split("~");
+					String start = tm[0].replace(".", "-");
+					String end = tm[1].replace(".", "-");
+					LocalDate startDate = LocalDate.parse(start.trim());
+					LocalDate endDate = LocalDate.parse(end.trim());
+					InterParkDTO tmp = new InterParkDTO(null, name, location, interparkCode, InterparkType.values()[j], startDate, endDate);
+					ls.add(tmp);
 				}
 				
-				for (Element element : el) {
-					String tmp = element.getElementsByClass("Rkdate").select("a").text();
-					map.put("location", tmp);
+				interparkRepository.save(ls);
+				List<InterParkDTO> tm = interparkRepository.findAllByDtype(InterparkType.values()[j]);
+				
+				assertEquals("크롤링한 페이지의 타이틀이 동일하지 않습니다.", doc.title(), "싸니까 믿으니까 - 인터파크 티켓");
+				assertEquals("처리 전 데이터와 처리 후 데이터의 List size가 불일치합니다.",el.size(), ls.size());
+				for(int i = 0; i < tm.size(); i++) {
+					assertEquals("카테고리별로 데이터베이스에 값이 들어가지 않았습니다.",tm.get(i), ls.get(i));
 				}
-
-				for (Element element : el) {
-					String tmp = element.child(3).text();
-					String[] tm = tmp.split("~");
-					String startDate = tm[0];
-					String endDate = tm[1];
-					map.put("startDate", startDate);
-					map.put("endDate", endDate);
-				}
-				ls.add(map);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}finally {
-			assertEquals("처리 전 데이터와 처리 후 데이터의 List size가 불일치합니다.",el.size(), ls.size());
+			
 		}
+	}
+	
+	@Test
+	public void testLocalDate() {
+		String startDate = "2018-10-03";
+		LocalDate start = LocalDate.parse(startDate);
+		String endDate = "2019-11-02";
+		LocalDate end = LocalDate.parse(endDate);
+		
+		assertEquals(startDate, start.toString());
+		assertEquals(endDate, end.toString());
 	}
 
 }
