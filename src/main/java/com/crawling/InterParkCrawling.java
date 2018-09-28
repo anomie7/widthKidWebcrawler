@@ -18,14 +18,12 @@ import com.crawling.exception.SizeNotMatchedException;
 public class InterParkCrawling {
 	@Autowired
 	private InterParkRepository interparkRepository;
-
-	final static String[] CategoryArray = { "Fam_M", "Fam_P", "Fam_C", "Fam_L" };
 	private final String URL = "http://ticket.interpark.com/TPGoodsList.asp?Ca=Fam&SubCa=";
 	private final String cssQuery = ".Rk_gen2 .stit tbody tr";
 
-	public List<InterParkDTO> crawling(String category, int i) throws Exception {
+	public List<InterParkDTO> crawling(InterparkType dtype) throws Exception {
 		try {
-			Document doc = Jsoup.connect(URL + category).get();
+			Document doc = Jsoup.connect(URL + dtype.getSubCa()).get();
 			Elements el = doc.select(cssQuery);
 			List<InterParkDTO> result = new ArrayList<>();
 			
@@ -35,7 +33,7 @@ public class InterParkCrawling {
 				String date = element.child(3).text();
 				String groupCode = element.select(".fw_bold a").attr("href");
 				
-				InterParkDTO tmp = new InterParkDTO(null, name, location, InterparkType.values()[i]);
+				InterParkDTO tmp = new InterParkDTO(null, name, location, dtype);
 				tmp.addStartDateAndEndDate(date);
 				tmp.addInterparkCode(groupCode);
 				
@@ -57,9 +55,9 @@ public class InterParkCrawling {
 		interparkRepository.save(dto);
 	}
 
-	public List<InterParkDTO> findNewCrawlingData(String category, int i) throws Exception {
-		List<InterParkDTO> ls = crawling(category, i);
-		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[i]);
+	public List<InterParkDTO> findNewCrawlingData(InterparkType dtype) throws Exception {
+		List<InterParkDTO> ls = crawling(dtype);
+		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(dtype);
 		List<InterParkDTO> result = ls.stream()
 				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode())))
 				.collect(Collectors.toList());

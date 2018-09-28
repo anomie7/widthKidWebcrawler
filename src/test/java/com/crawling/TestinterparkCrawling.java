@@ -45,10 +45,9 @@ public class TestinterparkCrawling {
 
 	@Test
 	public void testInterparkCrawling() throws Exception {
-		String[] Category = InterParkCrawling.CategoryArray;
 		List<InterParkDTO> ls = null;
-		for (int i = 0; i < Category.length; i++) {
-			ls = interparkCrawling.crawling(Category[i], i);
+		for (InterparkType dtype  :  InterparkType.values()) {
+			ls = interparkCrawling.crawling(dtype);
 			log.info("result size  : {}", ls.size());
 		}
 	}
@@ -59,12 +58,18 @@ public class TestinterparkCrawling {
 		tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[0]);
 		log.info("interparkcode {} count:  {}", InterparkType.values()[0], tmp.stream().count());
 	}
+	
+	@Test
+	public void testEnumVal() {
+		InterparkType[] tmp = InterparkType.values();
+		String tmp2 = InterparkType.Mu.getSubCa();
+	}
 
 	@Test
 	public void testFindNewCrawlingData() throws Exception {
-		String[] Category = InterParkCrawling.CategoryArray;
-		for (int i = 0; i < Category.length; i++) {
-			List<InterParkDTO> tmp = interparkCrawling.findNewCrawlingData(Category[i], i);
+		for (InterparkType dtype  :  InterparkType.values()) {
+			List<InterParkDTO> tmp = interparkCrawling.findNewCrawlingData(dtype);
+			interparkRepository.save(tmp);
 			log.info("{}", tmp.size());
 		}
 	}
