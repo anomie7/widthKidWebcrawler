@@ -3,6 +3,7 @@ package com.crawling;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -54,5 +55,14 @@ public class InterParkCrawling {
 	
 	public void save(List<InterParkDTO> dto) {
 		interparkRepository.save(dto);
+	}
+
+	public List<InterParkDTO> findNewCrawlingData(String category, int i) throws Exception {
+		List<InterParkDTO> ls = crawling(category, i);
+		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[i]);
+		List<InterParkDTO> result = ls.stream()
+				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode())))
+				.collect(Collectors.toList());
+		return result;
 	}
 }

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,6 +58,15 @@ public class TestinterparkCrawling {
 		List<String> tmp = null;
 		tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[0]);
 		log.info("interparkcode {} count:  {}", InterparkType.values()[0], tmp.stream().count());
+	}
+
+	@Test
+	public void testFindNewCrawlingData() throws Exception {
+		String[] Category = InterParkCrawling.CategoryArray;
+		for (int i = 0; i < Category.length; i++) {
+			List<InterParkDTO> tmp = interparkCrawling.findNewCrawlingData(Category[i], i);
+			log.info("{}", tmp.size());
+		}
 	}
 
 	@Test
