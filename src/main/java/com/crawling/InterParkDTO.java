@@ -1,6 +1,8 @@
 package com.crawling;
 
 import java.time.LocalDate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,7 +12,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,8 @@ public class InterParkDTO {
 	private Long id;
 	private String name;
 	private String location;
+	
+	@Column(unique=true)
 	private String interparkCode;
 	private char delete = 'N';
 	
@@ -34,15 +37,25 @@ public class InterParkDTO {
 	private LocalDate startDate;
 	private LocalDate endDate;
 	
-	public InterParkDTO(Long id, String name, String location, String interparkCode, InterparkType dtype,
-			LocalDate startDate, LocalDate endDate) {
-		super();
+	public InterParkDTO(Long id, String name, String location, InterparkType dtype) {
 		this.id = id;
 		this.name = name;
 		this.location = location;
-		this.interparkCode = interparkCode;
 		this.dtype = dtype;
-		this.startDate = startDate;
-		this.endDate = endDate;
+	}
+
+	public void addStartDateAndEndDate(String date) {
+		String[] tm = date.split("~");
+		String start = tm[0].replace(".", "-");
+		String end = tm[1].replace(".", "-");
+		this.startDate = LocalDate.parse(start.trim());
+		this.endDate = LocalDate.parse(end.trim());
+	}
+
+	public void addInterparkCode(String groupCode) {
+		String pattern = "^*.*=";
+		Pattern r = Pattern.compile(pattern);
+		Matcher m = r.matcher(groupCode);
+		this.interparkCode = m.replaceAll("");
 	}
 }
