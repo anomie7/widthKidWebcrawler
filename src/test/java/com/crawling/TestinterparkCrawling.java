@@ -3,8 +3,8 @@ package com.crawling;
 import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,19 +51,7 @@ public class TestinterparkCrawling {
 			log.info("result size  : {}", ls.size());
 		}
 	}
-
-	@Test
-	public void testFindInterparkCode() {
-		List<String> tmp = null;
-		tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[0]);
-		log.info("interparkcode {} count:  {}", InterparkType.values()[0], tmp.stream().count());
-	}
 	
-	@Test
-	public void testEnumVal() {
-		InterparkType[] tmp = InterparkType.values();
-		String tmp2 = InterparkType.Mu.getSubCa();
-	}
 
 	@Test
 	public void testFindNewCrawlingData() throws Exception {
@@ -75,14 +63,43 @@ public class TestinterparkCrawling {
 	}
 
 	@Test
-	public void testLocalDate() {
-		String startDate = "2018-10-03";
-		LocalDate start = LocalDate.parse(startDate);
-		String endDate = "2019-11-02";
-		LocalDate end = LocalDate.parse(endDate);
+	public void testFindInterparkCode() {
+		List<String> tmp = null;
+		tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[0]);
+		log.info("interparkcode {} count:  {}", InterparkType.values()[0], tmp.stream().count());
+	}
+	
+	@Test
+	public void testFindEndDateBefore() {
+		List<InterParkDTO> tmp = interparkRepository.findByEndDateBefore(LocalDateTime.now());
+		tmp.forEach(m -> {log.info(m.toString() );});
+		log.info("{}", tmp.size());
+	}
+	
+	@Test
+	public void testFindStartDateAfter() {
+		List<InterParkDTO> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
+		tmp.forEach(m -> {log.info(m.toString() );});
+		log.info("{}", tmp.size());
+	}
+	
+	@Test
+	public void testEnumVal() {
+		InterparkType[] tmp = InterparkType.values();
+		String tmp2 = InterparkType.Mu.getSubCa();
+	}
 
-		assertEquals(startDate, start.toString());
-		assertEquals(endDate, end.toString());
+
+	@Test
+	public void testLocalDate() {
+		String startDate = "2018-09-03";
+		LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
+		String endDate = "2019-11-02";
+		LocalDateTime end = LocalDate.parse(endDate).atStartOfDay();
+
+		assertEquals("2018-09-03T00:00", start.toString());
+		assertEquals(endDate+"T00:00", end.toString());
+		assertEquals(true, start.isBefore(LocalDateTime.now()));
 	}
 
 }

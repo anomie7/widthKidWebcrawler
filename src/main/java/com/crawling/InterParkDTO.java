@@ -1,6 +1,7 @@
 package com.crawling;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,9 +16,10 @@ import javax.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity @Table(name="INTERPART_CRAWLING_DATA")
-@NoArgsConstructor
+@NoArgsConstructor @ToString
 @Getter @EqualsAndHashCode
 public class InterParkDTO {
 	@Id  
@@ -36,8 +38,8 @@ public class InterParkDTO {
 	@Enumerated(EnumType.STRING)
 	private InterparkType dtype;
 	
-	private LocalDate startDate;
-	private LocalDate endDate;
+	private LocalDateTime startDate;
+	private LocalDateTime endDate;
 	
 	public InterParkDTO(Long id, String name, String location, InterparkType dtype) {
 		this.id = id;
@@ -50,8 +52,8 @@ public class InterParkDTO {
 		String[] tm = date.split("~");
 		String start = tm[0].replace(".", "-");
 		String end = tm[1].replace(".", "-");
-		this.startDate = LocalDate.parse(start.trim());
-		this.endDate = LocalDate.parse(end.trim());
+		this.startDate = LocalDate.parse(start.trim()).atStartOfDay();
+		this.endDate = LocalDate.parse(end.trim()).atStartOfDay();
 	}
 
 	public void addInterparkCode(String groupCode) {
