@@ -18,29 +18,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Entity @Table(name="INTERPART_CRAWLING_DATA")
-@NoArgsConstructor @ToString
-@Getter @EqualsAndHashCode
+@Entity
+@Table(name = "INTERPART_CRAWLING_DATA")
+@NoArgsConstructor
+@ToString
+@Getter
+@EqualsAndHashCode
 public class InterParkDTO {
-	@Id  
+	@Id
 	@GeneratedValue
 	@Column(name = "INTERPART_ID")
 	private Long id;
 	private String name;
 	private String location;
-	
-	@Column(unique=true)
+
+	@Column(unique = true)
 	private String interparkCode;
-	
+
 	@Enumerated(EnumType.STRING)
 	private DeleteFlag deleteflag = DeleteFlag.N;
-	
+
 	@Enumerated(EnumType.STRING)
 	private InterparkType dtype;
-	
+
 	private LocalDateTime startDate;
 	private LocalDateTime endDate;
-	
+
 	public InterParkDTO(Long id, String name, String location, InterparkType dtype) {
 		this.id = id;
 		this.name = name;
@@ -61,5 +64,9 @@ public class InterParkDTO {
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(groupCode);
 		this.interparkCode = m.replaceAll("");
+	}
+
+	public void setDeleteflag(DeleteFlag deleteflag) {
+		this.deleteflag = deleteflag;
 	}
 }

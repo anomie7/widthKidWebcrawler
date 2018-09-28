@@ -71,17 +71,23 @@ public class TestinterparkCrawling {
 	
 	@Test
 	public void testFindEndDateBefore() {
-		List<InterParkDTO> tmp = interparkRepository.findByEndDateBefore(LocalDateTime.now());
-		tmp.forEach(m -> {log.info(m.toString() );});
+		List<InterParkDTO> tmp = interparkCrawling.invalidDataDelete();
 		log.info("{}", tmp.size());
 	}
 	
 	@Test
-	public void testFindStartDateAfter() {
+	public void testFindEndDateAfter() {
 		List<InterParkDTO> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
 		tmp.forEach(m -> {log.info(m.toString() );});
 		log.info("{}", tmp.size());
 	}
+	
+//	@Test
+//	public void testFindStartDateBeforeAndEndDate) {
+//		List<InterParkDTO> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
+//		tmp.forEach(m -> {log.info(m.toString() );});
+//		log.info("{}", tmp.size());
+//	}
 	
 	@Test
 	public void testEnumVal() {

@@ -1,6 +1,7 @@
 package com.crawling;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,6 +62,13 @@ public class InterParkCrawling {
 		List<InterParkDTO> result = ls.stream()
 				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode())))
 				.collect(Collectors.toList());
+		return result;
+	}
+
+	public List<InterParkDTO> invalidDataDelete() {
+		List<InterParkDTO> result = interparkRepository.findByEndDateBefore(LocalDateTime.now());
+		result.forEach(m -> {m.setDeleteflag(DeleteFlag.Y);});
+		interparkRepository.save(result);
 		return result;
 	}
 }
