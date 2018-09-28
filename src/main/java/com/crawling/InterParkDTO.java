@@ -29,7 +29,9 @@ public class InterParkDTO {
 	
 	@Column(unique=true)
 	private String interparkCode;
-	private char delete = 'N';
+	
+	@Enumerated(EnumType.STRING)
+	private DeleteFlag deleteflag = DeleteFlag.N;
 	
 	@Enumerated(EnumType.STRING)
 	private InterparkType dtype;
