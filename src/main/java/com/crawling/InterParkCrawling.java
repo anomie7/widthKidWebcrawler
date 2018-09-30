@@ -1,7 +1,15 @@
 package com.crawling;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,7 +23,9 @@ import org.springframework.stereotype.Service;
 
 import com.crawling.exception.SizeNotMatchedException;
 
-@Service
+import lombok.extern.slf4j.Slf4j;
+
+@Service @Slf4j
 public class InterParkCrawling {
 	@Autowired
 	private InterParkRepository interparkRepository;
@@ -37,6 +47,10 @@ public class InterParkCrawling {
 				InterParkDTO tmp = new InterParkDTO(null, name, location, dtype);
 				
 				Address address = findAddressByUrl(addressUrl.attr("href"));
+				
+				String groupCodeUrl = "http://ticket.interpark.com/" + groupCode;
+				tmp.addImageFilePath(saveImgFile(groupCodeUrl));
+				
 				tmp.addAddress(address);
 				tmp.addStartDateAndEndDate(date);
 				tmp.addInterparkCode(groupCode);
@@ -58,7 +72,8 @@ public class InterParkCrawling {
 	public void save(List<InterParkDTO> dto) {
 		interparkRepository.save(dto);
 	}
-
+	
+	//크롤링 과정 중에 모든 이미지를 받아버림..이미 db에 존재하거나 무효한 데이터는 이미지를 저장하지 않도록 해야함
 	public List<InterParkDTO> findNewCrawlingData(InterparkType dtype) throws Exception {
 		List<InterParkDTO> ls = crawling(dtype);
 		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(dtype);
@@ -66,6 +81,65 @@ public class InterParkCrawling {
 				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode())))
 				.collect(Collectors.toList());
 		return result;
+	}
+	
+	public String saveImgFile(String url) throws IOException {
+		DateTimeFormatter dirFormattor = DateTimeFormatter.ofPattern("yyyyMMdd");
+		DateTimeFormatter fileNameFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+		
+		Document doc = Jsoup.connect(url).get();
+		String imgTagSrc = doc.getElementsByClass("poster").select("img").attr("src");
+		
+		log.debug(imgTagSrc);
+		
+		String filePath = "D:/imgFolder/" + LocalDate.now().format(dirFormattor) + "/";
+		String fileName = LocalDateTime.now().format(fileNameFormatter);
+		String saveFilePath = filePath + fileName;
+		File dir = new File(filePath);
+
+		InputStream is = null;
+		BufferedOutputStream os = null;
+
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+
+		URL fileUrl;
+		try {
+			fileUrl = new URL(imgTagSrc);
+			URLConnection urlConn = fileUrl.openConnection();
+			urlConn.connect();
+			is = urlConn.getInputStream();
+			os = new BufferedOutputStream(new FileOutputStream(saveFilePath));
+
+			int readBytes = 0;
+
+			byte[] buf = new byte[4096];
+
+			while ((readBytes = is.read(buf)) != -1) {
+				os.write(buf, 0, readBytes);
+			}
+
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return null;
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if (os != null) {
+				try {
+					os.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return saveFilePath;
 	}
 
 	public List<InterParkDTO> invalidDataDelete() {

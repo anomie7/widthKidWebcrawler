@@ -46,4 +46,4 @@ spring:
 logging:
   level:
     root: info
-#    com.crawling: debug
+    com.crawling: debug

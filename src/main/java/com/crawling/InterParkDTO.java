@@ -36,7 +36,9 @@ public class InterParkDTO {
 	private Address address;
 	@Column(unique = true)
 	private String interparkCode;
-
+	
+	private String imageFilePath;
+	
 	@Enumerated(EnumType.STRING)
 	private DeleteFlag deleteflag = DeleteFlag.N;
 
@@ -74,5 +76,9 @@ public class InterParkDTO {
 
 	public void addAddress(Address address) {
 		this.address = address;
+	}
+
+	public void addImageFilePath(String imageFilePath) {
+		this.imageFilePath = imageFilePath;
 	}
 }

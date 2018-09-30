@@ -44,23 +44,17 @@ public class Address {
 		
 		String[] tmp = address.split(" ");
 		if(cityMacher.find()) {
-			log.debug(tmp[0]);
-			log.debug(tmp[1]);
 			return Address.builder()
 						  .fullAddress(address)
 						  .city(tmp[0])
 						  .district(tmp[1])
 						  .build();
 		}else if(provinceMatcher.find()) {
-			log.debug(tmp[0]);
-			log.debug(tmp[1]);
 			return Address.builder()
 						  .fullAddress(address)
 						  .province(tmp[0])
 						  .city(tmp[1]).build();
 		}else if(etcMatcher.find()) {
-			log.debug(tmp[0]);
-			log.debug(tmp[1]);
 			return Address.builder()
 						  .fullAddress(address)
 						  .city(tmp[0])
