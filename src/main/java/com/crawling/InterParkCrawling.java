@@ -30,11 +30,14 @@ public class InterParkCrawling {
 			
 			for (Element element : el) {
 				String name = element.getElementsByClass("RKtxt").select("a").text().trim();
-				String location = element.getElementsByClass("Rkdate").select("a").text().trim();
+				Elements addressUrl = element.getElementsByClass("Rkdate").select("a");
+				String location = addressUrl.text().trim();
 				String date = element.child(3).text();
 				String groupCode = element.select(".fw_bold a").attr("href");
-				
 				InterParkDTO tmp = new InterParkDTO(null, name, location, dtype);
+				
+				Address address = findAddressByUrl(addressUrl.attr("href"));
+				tmp.addAddress(address);
 				tmp.addStartDateAndEndDate(date);
 				tmp.addInterparkCode(groupCode);
 				
@@ -48,8 +51,8 @@ public class InterParkCrawling {
 			return result;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 	
 	public void save(List<InterParkDTO> dto) {
@@ -70,5 +73,14 @@ public class InterParkCrawling {
 		result.forEach(m -> {m.setDeleteflag(DeleteFlag.Y);});
 		interparkRepository.save(result);
 		return result;
+	}
+
+	public Address findAddressByUrl(String addressUrl) throws IOException {
+		Document doc = Jsoup.connect(addressUrl).get();
+		Elements el = doc.select("body table > tbody > tr:nth-child(2) > td:nth-child(3) > table > tbody > tr:nth-child(2)")
+						 .select("table > tbody > tr > td:nth-child(2)")
+						 .select("table > tbody > tr:nth-child(3) > td");
+		String address =  el.text().replace("주 소 :", "").trim();
+		return Address.convertStringToAddressObj(address);
 	}
 }

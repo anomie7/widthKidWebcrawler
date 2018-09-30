@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -31,7 +32,8 @@ public class InterParkDTO {
 	private Long id;
 	private String name;
 	private String location;
-
+	@Embedded
+	private Address address;
 	@Column(unique = true)
 	private String interparkCode;
 
@@ -68,5 +70,9 @@ public class InterParkDTO {
 
 	public void setDeleteflag(DeleteFlag deleteflag) {
 		this.deleteflag = deleteflag;
+	}
+
+	public void addAddress(Address address) {
+		this.address = address;
 	}
 }
