@@ -1,5 +1,6 @@
 package com.crawling;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
@@ -13,6 +14,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,9 +38,9 @@ public class InterParkDTO {
 	private Address address;
 	@Column(unique = true)
 	private String interparkCode;
-	
+
 	private String imageFilePath;
-	
+
 	@Enumerated(EnumType.STRING)
 	private DeleteFlag deleteflag = DeleteFlag.N;
 
@@ -48,6 +50,15 @@ public class InterParkDTO {
 	private LocalDateTime startDate;
 	private LocalDateTime endDate;
 
+	@Transient
+	private String addressUrl;
+
+	@Transient
+	private String date;
+
+	@Transient
+	private String groupCode;
+
 	public InterParkDTO(Long id, String name, String location, InterparkType dtype) {
 		this.id = id;
 		this.name = name;
@@ -55,12 +66,28 @@ public class InterParkDTO {
 		this.dtype = dtype;
 	}
 
-	public void addStartDateAndEndDate(String date) {
-		String[] tm = date.split("~");
+	public InterParkDTO(Long id, String name, String location, InterparkType dtype, String addressUrl, String date,
+			String groupCode) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.location = location;
+		this.dtype = dtype;
+		this.addressUrl = addressUrl;
+		this.date = date;
+		this.groupCode = groupCode;
+	}
+
+	public void addStartDateAndEndDate() {
+		String[] tm = this.date.split("~");
 		String start = tm[0].replace(".", "-");
 		String end = tm[1].replace(".", "-");
 		this.startDate = LocalDate.parse(start.trim()).atStartOfDay();
 		this.endDate = LocalDate.parse(end.trim()).atStartOfDay();
+	}
+
+	public void setDeleteflag(DeleteFlag deleteflag) {
+		this.deleteflag = deleteflag;
 	}
 
 	public void addInterparkCode(String groupCode) {
@@ -70,15 +97,22 @@ public class InterParkDTO {
 		this.interparkCode = m.replaceAll("");
 	}
 
-	public void setDeleteflag(DeleteFlag deleteflag) {
-		this.deleteflag = deleteflag;
+	public void addAddress() throws IOException {
+		this.address = InterParkCrawling.findAddressByUrl(this.addressUrl);
 	}
 
-	public void addAddress(Address address) {
-		this.address = address;
+	public void addImageFilePath() throws IOException {
+		this.imageFilePath = InterParkCrawling.saveImgFile("http://ticket.interpark.com/" + this.groupCode);
+		;
 	}
 
-	public void addImageFilePath(String imageFilePath) {
-		this.imageFilePath = imageFilePath;
+	public static void interparkConsumer(InterParkDTO m) {
+		try {
+			m.addAddress();
+			m.addStartDateAndEndDate();
+			m.addImageFilePath();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
