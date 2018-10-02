@@ -47,7 +47,7 @@ public class TestinterparkCrawling {
 	// }
 
 	@Test
-	public void testInterparkCrawling() throws Exception {
+	public void testCrawling() throws Exception {
 		List<InterParkDTO> ls = null;
 		for (InterparkType dtype : InterparkType.values()) {
 			ls = interparkCrawling.crawling(dtype);
