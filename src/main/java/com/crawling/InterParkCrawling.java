@@ -113,9 +113,9 @@ public class InterParkCrawling {
 	public List<InterParkDTO> findNewCrawlingData(InterparkType dtype) throws Exception {
 		List<InterParkDTO> ls = crawling(dtype);
 		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(dtype);
-		List<InterParkDTO> result = ls.stream().filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode())))
+		List<InterParkDTO> result = ls.parallelStream().filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode())))
 				.collect(Collectors.toList());
-		result.forEach(InterParkDTO::interparkConsumer);
+		result.parallelStream().forEach(InterParkDTO::interparkConsumer);
 		return result;
 	}
 
