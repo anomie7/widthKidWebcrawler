@@ -3,19 +3,25 @@ package com.crawling;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +29,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "INTERPART_CRAWLING_DATA")
-@NoArgsConstructor
+@NoArgsConstructor 
 @ToString
 @Getter
 @EqualsAndHashCode
@@ -46,7 +52,10 @@ public class InterParkDTO {
 
 	@Enumerated(EnumType.STRING)
 	private InterparkType dtype;
-
+	
+	@OneToMany(cascade=CascadeType.PERSIST, fetch=FetchType.LAZY, mappedBy="interpark")
+	private List<Price> price = new ArrayList<>();
+	
 	private LocalDateTime startDate;
 	private LocalDateTime endDate;
 

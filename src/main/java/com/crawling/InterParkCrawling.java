@@ -25,13 +25,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.crawling.exception.SizeNotMatchedException;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
+@Slf4j @Transactional
 public class InterParkCrawling {
 	@Autowired
 	private InterParkRepository interparkRepository;
@@ -125,14 +126,6 @@ public class InterParkCrawling {
 	}
 
 	public void findPrice(WebDriver driver, InterParkDTO dto) {
-
-		// ChromeOptions chromeOptions = new ChromeOptions();
-		// chromeOptions.addArguments("--headless");
-		//
-		// System.setProperty("webdriver.chrome.driver",
-		// "src/main/resources/chromedriver.exe");
-		// WebDriver driver = new ChromeDriver(chromeOptions);
-
 		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
 		log.info(url);
 		driver.get(url);
@@ -171,15 +164,6 @@ public class InterParkCrawling {
 				log.debug("전시 행사는 가격 html tag 구조가 아예 다릅니다.");
 			}
 		}
-		// el.forEach(m -> {
-		// m.findElements(By.tagName("td")).forEach( n -> {
-		// final String[] text = n.getText().split("원");
-		// if(text != null && !text.equals(" ")) {
-		// log.debug("{} {}", dto.getInterparkCode(), text[0]);
-		// log.debug("{} {}", dto.getInterparkCode(), text[1].trim());
-		// }
-		// });
-		// });
 	}
 
 	public List<InterParkDTO> invalidDataDelete() {
