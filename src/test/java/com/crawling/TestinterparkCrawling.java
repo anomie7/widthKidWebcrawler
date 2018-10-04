@@ -1,5 +1,6 @@
 package com.crawling;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -18,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,23 +87,32 @@ public class TestinterparkCrawling {
 		String url7 = "http://ticket.interpark.com/TPPlace/Main/TPPlace_Detail.asp?PlaceCode=17000853&PlaceOfFlag=";
 
 		String[] urlArr = { url1, url2, url3, url4, url5, url6, url7 };
-
+		
+		List<Address> ls = new ArrayList<>();
 		for (String addressUrl : urlArr) {
-			Address address = interparkCrawling.findAddressByUrl(addressUrl);
+			Address address = InterParkCrawling.findAddressByUrl(addressUrl);
+			ls.add(address);
 		}
+		
+		assertThat(ls.get(0).getCity()).isEqualTo("서울특별시");
+		assertThat(ls.get(1).getProvince()).isEqualTo("경상남도");
+		assertThat(ls.get(2).getProvince()).isEqualTo("충남");
+		assertThat(ls.get(3).getCity()).isEqualTo("서울");
+		assertThat(ls.get(4).getCity()).isEqualTo("서울시");
+		assertThat(ls.get(5).getCity()).isEqualTo(null);
+		assertThat(ls.get(6)).isNull();;
 	}
 
-	@Test // 보류 이미지 파일 받은 이후에
+	@Test
 	public void testsaveImgFile() {
 		String url = "http://ticket.interpark.com/Ticket/Goods/GoodsInfo.asp?GroupCode=18009908";
 		String fullFilePath = null;
 		try {
-			fullFilePath = interparkCrawling.saveImgFile(url);
+			fullFilePath = InterParkCrawling.saveImgFile(url);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		assertEquals("저장한 이미지가 존재하지 않습니다.", true, new File(fullFilePath).exists());
-		// String tmp = doc.select(".info_Div").text();
 	}
 
 	@Test
@@ -113,7 +123,7 @@ public class TestinterparkCrawling {
 
 		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
 		WebDriver driver = new ChromeDriver(chromeOptions);
-
+		
 		for (InterparkType dtype : InterparkType.values()) {
 			List<InterParkDTO> ls;
 			ls = interparkCrawling.crawling(dtype);
@@ -126,7 +136,6 @@ public class TestinterparkCrawling {
 				}
 			}
 		}
-
 	}
 
 	@Test
@@ -168,39 +177,9 @@ public class TestinterparkCrawling {
 	}
 
 	@Test
-	public void testFindInterparkCode() {
-		List<String> tmp = null;
-		tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[0]);
-		log.debug("interparkcode {} count:  {}", InterparkType.values()[0], tmp.stream().count());
-	}
-
-	@Test
 	public void testFindEndDateBefore() {
 		List<InterParkDTO> tmp = interparkCrawling.invalidDataDelete();
 		log.debug("{}", tmp.size());
-	}
-
-	@Test @Transactional
-	public void testFindEndDateAfter() {
-		List<InterParkDTO> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
-		tmp.forEach(m -> {
-			log.debug(m.toString());
-		});
-		log.debug("{}", tmp.size());
-	}
-
-	// @Test
-	// public void testFindStartDateBeforeAndEndDate) {
-	// List<InterParkDTO> tmp =
-	// interparkRepository.findByEndDateAfter(LocalDateTime.now());
-	// tmp.forEach(m -> {log.debug(m.toString() );});
-	// log.debug("{}", tmp.size());
-	// }
-
-	@Test
-	public void testEnumVal() {
-		InterparkType[] tmp = InterparkType.values();
-		String tmp2 = InterparkType.Mu.getSubCa();
 	}
 
 	@Test

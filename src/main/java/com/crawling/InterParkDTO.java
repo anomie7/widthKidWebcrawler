@@ -21,7 +21,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,7 +52,7 @@ public class InterParkDTO {
 	@Enumerated(EnumType.STRING)
 	private InterparkType dtype;
 	
-	@OneToMany(cascade=CascadeType.PERSIST, fetch=FetchType.LAZY, mappedBy="interpark")
+	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="interpark")
 	private List<Price> price = new ArrayList<>();
 	
 	private LocalDateTime startDate;
@@ -123,5 +122,12 @@ public class InterParkDTO {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void addPrice(Price price) {
+		if(this.price != null && !this.price.contains(price)) {
+			this.price.add(price);
+		}
+		price.setInterpark(this);
 	}
 }

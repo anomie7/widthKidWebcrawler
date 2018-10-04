@@ -10,10 +10,12 @@ import javax.persistence.ManyToOne;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @NoArgsConstructor
-@Getter
-@Entity
+@Getter @Setter
+@Entity @ToString
 public class Price {
 	@Id
 	@GeneratedValue
@@ -21,7 +23,14 @@ public class Price {
 	private Long id;
 	private String name;
 	private int price;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "INTERPARK_CODE")
+	@JoinColumn(name = "INTERPART_ID")
 	private InterParkDTO interpark;
+
+	public Price(Long id, String name, int price) {
+		this.id = id;
+		this.name = name;
+		this.price = price;
+	}
 }

@@ -125,45 +125,52 @@ public class InterParkCrawling {
 		return result;
 	}
 
-	public void findPrice(WebDriver driver, InterParkDTO dto) {
+	public List<Price> findPrice(WebDriver driver, InterParkDTO dto) {
 		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
-		log.info(url);
+		log.debug(url);
 		driver.get(url);
 		dto.addInterparkCode(url);
 		List<WebElement> el = driver.findElement(By.id("divSalesPrice")).findElements(By.tagName("tr"));
+		List<Price> result = new ArrayList<>();
 		for (WebElement tr : el) {
 			List<WebElement> td = tr.findElements(By.tagName("td"));
 			if (td.size() == 3) {
+				Price price = new Price();
 				td.forEach(n -> {
 					final String text = n.getText().replaceAll(",|원", "");
 					if (text != null && !text.equals(" ")) {
 						Matcher matcher = Pattern.compile("(\\d[^%|층]{2,})+$").matcher(text);
 						if(matcher.find()) {
-							log.debug("[{}] price : {}", dto.getInterparkCode(), text);
+							price.setPrice(Integer.parseInt(text.trim()));
+							log.debug("[{}] price : {}", dto.getInterparkCode(), price.getPrice());
 						}else {
-							log.debug("[{}] name : {}", dto.getInterparkCode(), text);
+							price.setName(text.trim());
+							log.debug("[{}] name : {}", dto.getInterparkCode(), price.getName());
 						}
 					}
 				});
+				result.add(price);
 			} else if (td.size() == 1) {
 				td.forEach(n -> {
 					String[] text = n.getText().split("원");
 					for (String t : text) {
+						Price price = new Price();
 						t = t.replaceAll(",|▶", "");
 						Matcher matcher = Pattern.compile("(\\d[^%|층]{2,})+$").matcher(t);
 						if (matcher.find()) {
 							int startIdx = matcher.start();
 							String name = t.substring(0, startIdx).trim();
-							String price = t.substring(startIdx, t.length()).trim();
-							log.debug("[{}] ul에서 추출한  name : {}", dto.getInterparkCode(), name);
-							log.debug("[{}] ul에서 추출한  price : {}", dto.getInterparkCode(), price);
+							String priceValue = t.substring(startIdx, t.length()).trim();
+							price.setPrice(Integer.parseInt(priceValue));
+							price.setName(name);
+							log.debug("[{}] ul에서 추출한  {}", dto.getInterparkCode(), price.toString());
 						}
+						result.add(price);
 					}
 				});
-			} else {
-				log.debug("전시 행사는 가격 html tag 구조가 아예 다릅니다.");
 			}
 		}
+		return result;
 	}
 
 	public List<InterParkDTO> invalidDataDelete() {
