@@ -11,9 +11,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,8 +105,7 @@ public class TestinterparkCrawling {
 	}
 
 	@Test
-	public void testSavePriceUsingSelenium() {
-		final String priceUrl = "http://ticket.interpark.com/Ticket/Goods/GoodsInfo.asp?GroupCode=18013627";
+	public void testAllSavePriceUsingSelenium() throws Exception {
 
 		ChromeOptions chromeOptions = new ChromeOptions();
 		chromeOptions.addArguments("--headless");
@@ -116,22 +113,57 @@ public class TestinterparkCrawling {
 		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
 		WebDriver driver = new ChromeDriver(chromeOptions);
 
-		driver.get(priceUrl);
-		List<WebElement> el = driver.findElement(By.id("divSalesPrice")).findElements(By.tagName("tr"));
-		el.forEach(m -> {
-			m.findElements(By.tagName("td")).forEach(n -> log.debug("{}", n.getText()));
-		});
+		for (InterparkType dtype : InterparkType.values()) {
+			List<InterParkDTO> ls;
+			ls = interparkCrawling.crawling(dtype);
 
-		// try {
-		// Document doc = Jsoup.connect(priceUrl).get();;
-		// Elements elements =
-		// doc.body().getElementsByClass("info_Div").first().getElementById("trBasicPrice").getElementById("divSalesPrice").getElementsByTag("tr");
-		// for (Element element : elements) {
-		// log.debug("{}", element.getElementsByTag("td").text());
-		// }
-		// } catch (IOException e) {
-		// log.error(e.getMessage());
-		// }
+			for (InterParkDTO interParkDTO : ls) {
+				try {
+					interparkCrawling.findPrice(driver, interParkDTO);
+				} catch (Exception e) {
+					log.error(e.getMessage());
+				}
+			}
+		}
+
+	}
+
+	@Test
+	public void testFindSomePrice() {
+//		final String[] priceUrl = { "/Ticket/Goods/GoodsInfo.asp?GroupCode=18013627", // 시크릿
+//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18009908", // 먹구렁이와 생일파티
+//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18013051", // 황글별을 찾아라
+//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18011242", // 미니특공대x
+//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012269", // 버블매직쇼
+//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012422", // 베이블레이드 버스트 갓
+//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18011430", // 포켓다이노
+//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012942" // 무지개 물고기
+//		};
+		
+		final String[] priceUrl = { 
+				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18013243",
+				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012678",
+				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18008744",
+				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18010761",
+				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18010717",
+				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18010706",
+				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012270"
+		};
+
+		ChromeOptions chromeOptions = new ChromeOptions();
+		chromeOptions.addArguments("--headless");
+
+		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
+		WebDriver driver = new ChromeDriver(chromeOptions);
+
+		for (int i = 0; i < priceUrl.length; i++) {
+			InterParkDTO dto = new InterParkDTO(null, null, null, null, null, null, priceUrl[i]);
+			try {
+				interparkCrawling.findPrice(driver, dto);
+			} catch (Exception e) {
+				log.error(e.getMessage());
+			}
+		}
 	}
 
 	@Test

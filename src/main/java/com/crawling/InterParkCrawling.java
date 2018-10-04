@@ -12,12 +12,17 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -113,10 +118,68 @@ public class InterParkCrawling {
 	public List<InterParkDTO> findNewCrawlingData(InterparkType dtype) throws Exception {
 		List<InterParkDTO> ls = crawling(dtype);
 		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(dtype);
-		List<InterParkDTO> result = ls.parallelStream().filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode())))
-				.collect(Collectors.toList());
+		List<InterParkDTO> result = ls.parallelStream()
+				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode()))).collect(Collectors.toList());
 		result.parallelStream().forEach(InterParkDTO::interparkConsumer);
 		return result;
+	}
+
+	public void findPrice(WebDriver driver, InterParkDTO dto) {
+
+		// ChromeOptions chromeOptions = new ChromeOptions();
+		// chromeOptions.addArguments("--headless");
+		//
+		// System.setProperty("webdriver.chrome.driver",
+		// "src/main/resources/chromedriver.exe");
+		// WebDriver driver = new ChromeDriver(chromeOptions);
+
+		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
+		log.info(url);
+		driver.get(url);
+		dto.addInterparkCode(url);
+		List<WebElement> el = driver.findElement(By.id("divSalesPrice")).findElements(By.tagName("tr"));
+		for (WebElement tr : el) {
+			List<WebElement> td = tr.findElements(By.tagName("td"));
+			if (td.size() == 3) {
+				td.forEach(n -> {
+					final String text = n.getText().replaceAll(",|원", "");
+					if (text != null && !text.equals(" ")) {
+						Matcher matcher = Pattern.compile("(\\d[^%|층]{2,})+$").matcher(text);
+						if(matcher.find()) {
+							log.debug("[{}] price : {}", dto.getInterparkCode(), text);
+						}else {
+							log.debug("[{}] name : {}", dto.getInterparkCode(), text);
+						}
+					}
+				});
+			} else if (td.size() == 1) {
+				td.forEach(n -> {
+					String[] text = n.getText().split("원");
+					for (String t : text) {
+						t = t.replaceAll(",|▶", "");
+						Matcher matcher = Pattern.compile("(\\d[^%|층]{2,})+$").matcher(t);
+						if (matcher.find()) {
+							int startIdx = matcher.start();
+							String name = t.substring(0, startIdx).trim();
+							String price = t.substring(startIdx, t.length()).trim();
+							log.debug("[{}] ul에서 추출한  name : {}", dto.getInterparkCode(), name);
+							log.debug("[{}] ul에서 추출한  price : {}", dto.getInterparkCode(), price);
+						}
+					}
+				});
+			} else {
+				log.debug("전시 행사는 가격 html tag 구조가 아예 다릅니다.");
+			}
+		}
+		// el.forEach(m -> {
+		// m.findElements(By.tagName("td")).forEach( n -> {
+		// final String[] text = n.getText().split("원");
+		// if(text != null && !text.equals(" ")) {
+		// log.debug("{} {}", dto.getInterparkCode(), text[0]);
+		// log.debug("{} {}", dto.getInterparkCode(), text[1].trim());
+		// }
+		// });
+		// });
 	}
 
 	public List<InterParkDTO> invalidDataDelete() {
