@@ -1,12 +1,9 @@
 package com.crawling;
 
-import java.io.BufferedOutputStream;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +12,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -53,37 +52,22 @@ public class InterParkCrawling {
 		DateTimeFormatter fileNameFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
 		Document doc = Jsoup.connect(url).get();
-		String imgTagSrc = doc.getElementsByClass("poster").select("img").attr("src");
+		String imgUrl = doc.getElementsByClass("poster").select("img").attr("src");
 
-		log.debug(imgTagSrc);
+		log.debug(imgUrl);
 
-		String filePath = "D:/imgFolder/" + LocalDate.now().format(dirFormattor) + "/";
-		String fileName = LocalDateTime.now().format(fileNameFormatter);
-		String saveFilePath = filePath + fileName;
-		File dir = new File(filePath);
+		String folderPath = "D:/imgFolder/" + LocalDate.now().format(dirFormattor) + "/";
+		String ext = imgUrl.substring( imgUrl.lastIndexOf('.')+1, imgUrl.length() );  // 이미지 확장자 추출
+		String fileName = LocalDateTime.now().format(fileNameFormatter) + "." + ext;
+		String saveFilePath = folderPath + fileName;
+		File dir = new File(folderPath);
 
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-
-		URL fileUrl = new URL(imgTagSrc);
-		URLConnection urlConn = fileUrl.openConnection();
-		urlConn.connect();
-		try (InputStream is = urlConn.getInputStream();) {
-			@SuppressWarnings("resource")
-			BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(saveFilePath));
-			int readBytes = 0;
-
-			byte[] buf = new byte[4096];
-
-			while ((readBytes = is.read(buf)) != -1) {
-				os.write(buf, 0, readBytes);
-			}
-
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			return null;
-		}
+		
+		BufferedImage in = ImageIO.read(new URL(imgUrl).openStream());
+		ImageIO.write(in, ext, new File(saveFilePath));
 		return saveFilePath;
 	}
 
