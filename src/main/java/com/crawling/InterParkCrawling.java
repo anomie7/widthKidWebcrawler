@@ -22,6 +22,8 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,8 @@ import com.crawling.exception.SizeNotMatchedException;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j @Transactional
+@Slf4j
+@Transactional
 public class InterParkCrawling {
 	@Autowired
 	private InterParkRepository interparkRepository;
@@ -57,7 +60,7 @@ public class InterParkCrawling {
 		log.debug(imgUrl);
 
 		String folderPath = "D:/imgFolder/" + LocalDate.now().format(dirFormattor) + "/";
-		String ext = imgUrl.substring( imgUrl.lastIndexOf('.')+1, imgUrl.length() );  // 이미지 확장자 추출
+		String ext = imgUrl.substring(imgUrl.lastIndexOf('.') + 1, imgUrl.length()); // 이미지 확장자 추출
 		String fileName = LocalDateTime.now().format(fileNameFormatter) + "." + ext;
 		String saveFilePath = folderPath + fileName;
 		File dir = new File(folderPath);
@@ -65,7 +68,7 @@ public class InterParkCrawling {
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		
+
 		BufferedImage in = ImageIO.read(new URL(imgUrl).openStream());
 		ImageIO.write(in, ext, new File(saveFilePath));
 		return saveFilePath;
@@ -106,10 +109,28 @@ public class InterParkCrawling {
 		List<InterParkDTO> result = ls.parallelStream()
 				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode()))).collect(Collectors.toList());
 		result.parallelStream().forEach(InterParkDTO::interparkConsumer);
+
+		ChromeOptions chromeOptions = new ChromeOptions();
+		chromeOptions.addArguments("--headless");
+		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
+
+		final WebDriver driver = new ChromeDriver(chromeOptions);
+		for (InterParkDTO interParkDTO : result) {
+			try {
+				if (dtype.equals(InterparkType.Ex)) {
+					this.findPriceDtypeEx(driver, interParkDTO);
+				} else {
+					this.findPrice(driver, interParkDTO);
+				}
+			} catch (Exception e) {
+				log.info(interParkDTO.toString());
+				log.error(e.getMessage());
+			}
+		}
 		return result;
 	}
 
-	public List<Price> findPrice(WebDriver driver, InterParkDTO dto) {
+	public void findPrice(WebDriver driver, InterParkDTO dto) {
 		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
 		log.debug(url);
 		driver.get(url);
@@ -124,10 +145,10 @@ public class InterParkCrawling {
 					final String text = n.getText().replaceAll(",|원", "");
 					if (text != null && !text.equals(" ")) {
 						Matcher matcher = Pattern.compile("(\\d[^%|층]{2,})+$").matcher(text);
-						if(matcher.find()) {
+						if (matcher.find()) {
 							price.setPrice(Integer.parseInt(text.trim()));
 							log.debug("[{}] price : {}", dto.getInterparkCode(), price.getPrice());
-						}else {
+						} else {
 							price.setName(text.trim());
 							log.debug("[{}] name : {}", dto.getInterparkCode(), price.getName());
 						}
@@ -154,7 +175,34 @@ public class InterParkCrawling {
 				});
 			}
 		}
-		return result;
+		for (Price price : result) {
+			dto.addPrice(price);
+		}
+	}
+
+	public void findPriceDtypeEx(WebDriver driver, InterParkDTO dto) {
+		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
+		log.debug(url);
+		driver.get(url);
+		dto.addInterparkCode(url);
+		driver.findElement(By.cssSelector("img[alt=\"가격상세보기\"]")).click();
+		List<Price> result = new ArrayList<>();
+		List<WebElement> tb = driver.switchTo().frame("ifrTabB").findElements(By.className("tb_lv2"));
+		for (WebElement webElement : tb) {
+			List<WebElement> tr = webElement.findElements(By.tagName("tr"));
+			tr.forEach(el -> {
+				String name = el.findElement(By.cssSelector("td:nth-child(1)")).getText();
+				String won = el.findElement(By.cssSelector("td:nth-child(2)")).getText().replaceAll(",|원", "");
+				Price price = new Price();
+				price.setName(name);
+				price.setPrice(Integer.parseInt(won));
+				log.debug(price.toString());
+				result.add(price);
+			});
+		}
+		for (Price price : result) {
+			dto.addPrice(price);
+		}
 	}
 
 	public List<InterParkDTO> invalidDataDelete() {

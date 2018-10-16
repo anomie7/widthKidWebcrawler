@@ -21,6 +21,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +39,7 @@ import lombok.ToString;
 public class InterParkDTO {
 	@Id
 	@GeneratedValue
-	@Column(name = "INTERPART_ID")
+	@Column(name = "INTERPARK_ID")
 	private Long id;
 	private String name;
 	private String location;
@@ -113,6 +117,19 @@ public class InterParkDTO {
 		this.imageFilePath = InterParkCrawling.saveImgFile("http://ticket.interpark.com/" + this.groupCode);
 		;
 	}
+	
+//	public void addPrice() {
+//		ChromeOptions chromeOptions = new ChromeOptions();
+//		chromeOptions.addArguments("--headless");
+//		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
+//		WebDriver driver = new ChromeDriver(chromeOptions);
+//		
+//		if(dtype.equals(InterparkType.Ex)) {
+//			price = InterParkCrawling.findPriceDtypeEx(driver, this);
+//		}else {
+//			price = InterParkCrawling.findPrice(driver, this);
+//		}
+//	}
 
 	public static void interparkConsumer(InterParkDTO m) {
 		try {

@@ -9,7 +9,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,13 +22,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { WebCrawlingPracticeApplication.class })
 @ActiveProfiles("test")
-@Slf4j
+@Slf4j @Transactional
 public class TestinterparkCrawling {
 
 	@Autowired
@@ -35,37 +38,12 @@ public class TestinterparkCrawling {
 	@Autowired
 	private InterParkCrawling interparkCrawling;
 
-	// @Test
-	// public void testWemapeCrawling() {
-	// Document doc;
-	// final String URL = "http://www.wemakeprice.com/main/980200";
-	// final String cssQuery = ".container-inner .content-main";
-	//
-	// try {
-	// //페이지가 동적이기 때문에 이 방식으로는 모든 페이지의 컨텐츠를 크롤링할 수 없음
-	// doc = Jsoup.connect(URL).get();
-	// assertEquals("크롤링한 페이지의 타이틀이 동일하지 않습니다.", doc.title(), "특가대표! 위메프");
-	// log.debug(doc.select(cssQuery).toString());
-	// } catch (IOException e) {
-	// e.printStackTrace();
-	// }
-	// }
-
 	@Test
 	public void testCrawling() throws Exception {
 		List<InterParkDTO> ls = null;
 		for (InterparkType dtype : InterparkType.values()) {
 			ls = interparkCrawling.crawling(dtype);
 			log.debug("result size  : {}", ls.size());
-		}
-	}
-
-	@Test
-	public void testFindNewCrawlingData() throws Exception {
-		for (InterparkType dtype : InterparkType.values()) {
-			List<InterParkDTO> tmp = interparkCrawling.findNewCrawlingData(dtype);
-			interparkRepository.save(tmp);
-			log.debug("{}", tmp.size());
 		}
 	}
 
@@ -105,8 +83,8 @@ public class TestinterparkCrawling {
 
 	@Test
 	public void testsaveImgFile() {
-		String url = "http://ticket.interpark.com/Ticket/Goods/GoodsInfo.asp?GroupCode=18009908";
-		String fullFilePath = null;
+		String url = "http://ticket.interpark.com/Ticket/Goods/GoodsInfo.asp?GoodsCode=18013439";
+		String fullFilePath = "D:\\imgFolder/test.gif";
 		try {
 			fullFilePath = InterParkCrawling.saveImgFile(url);
 		} catch (IOException e) {
@@ -126,53 +104,20 @@ public class TestinterparkCrawling {
 		
 		for (InterparkType dtype : InterparkType.values()) {
 			List<InterParkDTO> ls;
-			ls = interparkCrawling.crawling(dtype);
-
+			ls = interparkCrawling.crawling(dtype).stream().limit(10).collect(Collectors.toList());
 			for (InterParkDTO interParkDTO : ls) {
 				try {
-					interparkCrawling.findPrice(driver, interParkDTO);
+					if(dtype.equals(InterparkType.Ex)) {
+						interparkCrawling.findPriceDtypeEx(driver, interParkDTO);
+					}else {
+						interparkCrawling.findPrice(driver, interParkDTO);
+					}
 				} catch (Exception e) {
+					log.info(interParkDTO.toString());
 					log.error(e.getMessage());
 				}
 			}
-		}
-	}
-
-	@Test
-	public void testFindSomePrice() {
-//		final String[] priceUrl = { "/Ticket/Goods/GoodsInfo.asp?GroupCode=18013627", // 시크릿
-//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18009908", // 먹구렁이와 생일파티
-//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18013051", // 황글별을 찾아라
-//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18011242", // 미니특공대x
-//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012269", // 버블매직쇼
-//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012422", // 베이블레이드 버스트 갓
-//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18011430", // 포켓다이노
-//				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012942" // 무지개 물고기
-//		};
-		
-		final String[] priceUrl = { 
-				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18013243",
-				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012678",
-				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18008744",
-				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18010761",
-				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18010717",
-				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18010706",
-				"/Ticket/Goods/GoodsInfo.asp?GroupCode=18012270"
-		};
-
-		ChromeOptions chromeOptions = new ChromeOptions();
-		chromeOptions.addArguments("--headless");
-
-		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
-		WebDriver driver = new ChromeDriver(chromeOptions);
-
-		for (int i = 0; i < priceUrl.length; i++) {
-			InterParkDTO dto = new InterParkDTO(null, null, null, null, null, null, priceUrl[i]);
-			try {
-				interparkCrawling.findPrice(driver, dto);
-			} catch (Exception e) {
-				log.error(e.getMessage());
-			}
+			interparkRepository.save(ls);
 		}
 	}
 
