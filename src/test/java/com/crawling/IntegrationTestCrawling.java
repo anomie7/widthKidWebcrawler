@@ -8,7 +8,6 @@ public class IntegrationTestCrawling {
 
 	/*@Autowired
 	private InterParkRepository interparkRepository;
-
 	@Autowired
 	private InterParkCrawling interparkCrawling;
 	
