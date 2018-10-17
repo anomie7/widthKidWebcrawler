@@ -40,3 +40,5 @@ dependencies {
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompileOnly "org.projectlombok:lombok:1.16.4"
 }
+
+task stage(dependsOn: ['build', 'clean'])
