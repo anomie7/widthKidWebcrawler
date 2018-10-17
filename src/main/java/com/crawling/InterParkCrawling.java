@@ -74,10 +74,10 @@ public class InterParkCrawling {
 		return saveFilePath;
 	}
 
-	public List<InterParkDTO> crawling(InterparkType dtype) throws Exception {
+	public List<InterPark> crawling(InterparkType dtype) throws Exception {
 		Document doc = Jsoup.connect(URL + dtype.getSubCa()).get();
 		Elements el = doc.select(cssQuery);
-		List<InterParkDTO> result = new ArrayList<>();
+		List<InterPark> result = new ArrayList<>();
 
 		for (Element element : el) {
 			String name = element.getElementsByClass("RKtxt").select("a").text().trim();
@@ -87,7 +87,7 @@ public class InterParkCrawling {
 			String date = element.child(3).text();
 			String groupCode = element.select(".fw_bold a").attr("href");
 
-			InterParkDTO dto = new InterParkDTO(null, name, location, dtype, addressUrl.attr("href"), date, groupCode);
+			InterPark dto = new InterPark(null, name, location, dtype, addressUrl.attr("href"), date, groupCode);
 			dto.addInterparkCode(groupCode);
 			result.add(dto);
 		}
@@ -99,38 +99,38 @@ public class InterParkCrawling {
 		return result;
 	}
 
-	public void save(List<InterParkDTO> dto) {
+	public void save(List<InterPark> dto) {
 		interparkRepository.save(dto);
 	}
 
-	public List<InterParkDTO> findNewCrawlingData(InterparkType dtype) throws Exception {
-		List<InterParkDTO> ls = crawling(dtype);
+	public List<InterPark> findNewCrawlingData(InterparkType dtype) throws Exception {
+		List<InterPark> ls = crawling(dtype);
 		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(dtype);
-		List<InterParkDTO> result = ls.parallelStream()
+		List<InterPark> result = ls.parallelStream()
 				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode()))).collect(Collectors.toList());
-		result.parallelStream().forEach(InterParkDTO::interparkConsumer);
+		result.parallelStream().forEach(InterPark::interparkConsumer);
 
 		ChromeOptions chromeOptions = new ChromeOptions();
 		chromeOptions.addArguments("--headless");
 		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
 
 		final WebDriver driver = new ChromeDriver(chromeOptions);
-		for (InterParkDTO interParkDTO : result) {
+		for (InterPark obj : result) {
 			try {
 				if (dtype.equals(InterparkType.Ex)) {
-					this.findPriceDtypeEx(driver, interParkDTO);
+					this.findPriceDtypeEx(driver, obj);
 				} else {
-					this.findPrice(driver, interParkDTO);
+					this.findPrice(driver, obj);
 				}
 			} catch (Exception e) {
-				log.info(interParkDTO.toString());
+				log.info(obj.toString());
 				log.error(e.getMessage());
 			}
 		}
 		return result;
 	}
 
-	public void findPrice(WebDriver driver, InterParkDTO dto) {
+	public void findPrice(WebDriver driver, InterPark dto) {
 		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
 		log.debug(url);
 		driver.get(url);
@@ -180,7 +180,7 @@ public class InterParkCrawling {
 		}
 	}
 
-	public void findPriceDtypeEx(WebDriver driver, InterParkDTO dto) {
+	public void findPriceDtypeEx(WebDriver driver, InterPark dto) {
 		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
 		log.debug(url);
 		driver.get(url);
@@ -205,8 +205,8 @@ public class InterParkCrawling {
 		}
 	}
 
-	public List<InterParkDTO> invalidDataDelete() {
-		List<InterParkDTO> result = interparkRepository.findByEndDateBefore(LocalDateTime.now());
+	public List<InterPark> invalidDataDelete() {
+		List<InterPark> result = interparkRepository.findByEndDateBefore(LocalDateTime.now());
 		result.forEach(m -> {
 			m.setDeleteflag(DeleteFlag.Y);
 		});

@@ -40,7 +40,7 @@ public class TestinterparkCrawling {
 
 	@Test
 	public void testCrawling() throws Exception {
-		List<InterParkDTO> ls = null;
+		List<InterPark> ls = null;
 		for (InterparkType dtype : InterparkType.values()) {
 			ls = interparkCrawling.crawling(dtype);
 			log.debug("result size  : {}", ls.size());
@@ -103,9 +103,9 @@ public class TestinterparkCrawling {
 		WebDriver driver = new ChromeDriver(chromeOptions);
 		
 		for (InterparkType dtype : InterparkType.values()) {
-			List<InterParkDTO> ls;
+			List<InterPark> ls;
 			ls = interparkCrawling.crawling(dtype).stream().limit(10).collect(Collectors.toList());
-			for (InterParkDTO interParkDTO : ls) {
+			for (InterPark interParkDTO : ls) {
 				try {
 					if(dtype.equals(InterparkType.Ex)) {
 						interparkCrawling.findPriceDtypeEx(driver, interParkDTO);
@@ -123,7 +123,7 @@ public class TestinterparkCrawling {
 
 	@Test
 	public void testFindEndDateBefore() {
-		List<InterParkDTO> tmp = interparkCrawling.invalidDataDelete();
+		List<InterPark> tmp = interparkCrawling.invalidDataDelete();
 		log.debug("{}", tmp.size());
 	}
 

@@ -60,7 +60,7 @@ public class TestInterParkRepository {
 
 	@Test
 	public void testFindEndDateAfter() {
-		List<InterParkDTO> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
+		List<InterPark> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
 		tmp.forEach(m -> {
 			log.debug(m.toString());
 		});
@@ -69,7 +69,7 @@ public class TestInterParkRepository {
 
 	@Test
 	public void testFindStartDateBeforeAndEndDate() {
-		List<InterParkDTO> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
+		List<InterPark> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
 		tmp.forEach(m -> {
 			log.debug(m.toString());
 		});
