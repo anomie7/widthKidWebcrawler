@@ -1,4 +1,4 @@
-package com.crawling;
+package com.crawling.domain;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -21,9 +21,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import com.crawling.service.InterParkCrawler;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,7 +34,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @EqualsAndHashCode
-public class InterPark {
+public class InterParkData {
 	@Id
 	@GeneratedValue
 	@Column(name = "INTERPARK_ID")
@@ -71,14 +69,14 @@ public class InterPark {
 	@Transient
 	private String groupCode;
 
-	public InterPark(Long id, String name, String location, InterparkType dtype) {
+	public InterParkData(Long id, String name, String location, InterparkType dtype) {
 		this.id = id;
 		this.name = name;
 		this.location = location;
 		this.dtype = dtype;
 	}
 
-	public InterPark(Long id, String name, String location, InterparkType dtype, String addressUrl, String date,
+	public InterParkData(Long id, String name, String location, InterparkType dtype, String addressUrl, String date,
 			String groupCode) {
 		super();
 		this.id = id;
@@ -110,11 +108,11 @@ public class InterPark {
 	}
 
 	public void addAddress() throws IOException {
-		this.address = InterParkCrawling.findAddressByUrl(this.addressUrl);
+		this.address = InterParkCrawler.findAddressByUrl(this.addressUrl);
 	}
 
 	public void addImageFilePath() throws IOException {
-		this.imageFilePath = InterParkCrawling.saveImgFile("http://ticket.interpark.com/" + this.groupCode);
+		this.imageFilePath = InterParkCrawler.saveImgFile("http://ticket.interpark.com/" + this.groupCode);
 		;
 	}
 	
@@ -131,7 +129,7 @@ public class InterPark {
 //		}
 //	}
 
-	public static void interparkConsumer(InterPark m) {
+	public static void interparkConsumer(InterParkData m) {
 		try {
 			m.addAddress();
 			m.addStartDateAndEndDate();

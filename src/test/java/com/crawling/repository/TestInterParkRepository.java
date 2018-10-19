@@ -1,4 +1,4 @@
-package com.crawling;
+package com.crawling.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +14,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.crawling.WebCrawlingPracticeApplication;
+import com.crawling.domain.InterParkData;
+import com.crawling.domain.InterparkType;
+import com.crawling.repository.InterParkRepository;
+import com.crawling.service.InterParkCrawler;
+
 import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
@@ -26,7 +32,7 @@ public class TestInterParkRepository {
 	private InterParkRepository interparkRepository;
 	
 	@Autowired
-	private InterParkCrawling interparkCrawling;
+	private InterParkCrawler interparkCrawling;
 	
 //	@Test
 //	public void testSave() throws Exception {
@@ -60,7 +66,7 @@ public class TestInterParkRepository {
 
 	@Test
 	public void testFindEndDateAfter() {
-		List<InterPark> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
+		List<InterParkData> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
 		tmp.forEach(m -> {
 			log.debug(m.toString());
 		});
@@ -69,7 +75,7 @@ public class TestInterParkRepository {
 
 	@Test
 	public void testFindStartDateBeforeAndEndDate() {
-		List<InterPark> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
+		List<InterParkData> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
 		tmp.forEach(m -> {
 			log.debug(m.toString());
 		});

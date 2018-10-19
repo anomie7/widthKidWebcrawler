@@ -1,4 +1,4 @@
-package com.crawling;
+package com.crawling.service;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -28,14 +28,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.crawling.domain.Address;
+import com.crawling.domain.DeleteFlag;
+import com.crawling.domain.InterParkData;
+import com.crawling.domain.InterparkType;
+import com.crawling.domain.Price;
 import com.crawling.exception.SizeNotMatchedException;
+import com.crawling.repository.InterParkRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 @Transactional
-public class InterParkCrawling {
+public class InterParkCrawler {
 	@Autowired
 	private InterParkRepository interparkRepository;
 	private final String URL = "http://ticket.interpark.com/TPGoodsList.asp?Ca=Fam&SubCa=";
@@ -74,10 +80,10 @@ public class InterParkCrawling {
 		return saveFilePath;
 	}
 
-	public List<InterPark> crawling(InterparkType dtype) throws Exception {
+	public List<InterParkData> crawling(InterparkType dtype) throws Exception {
 		Document doc = Jsoup.connect(URL + dtype.getSubCa()).get();
 		Elements el = doc.select(cssQuery);
-		List<InterPark> result = new ArrayList<>();
+		List<InterParkData> result = new ArrayList<>();
 
 		for (Element element : el) {
 			String name = element.getElementsByClass("RKtxt").select("a").text().trim();
@@ -87,7 +93,7 @@ public class InterParkCrawling {
 			String date = element.child(3).text();
 			String groupCode = element.select(".fw_bold a").attr("href");
 
-			InterPark dto = new InterPark(null, name, location, dtype, addressUrl.attr("href"), date, groupCode);
+			InterParkData dto = new InterParkData(null, name, location, dtype, addressUrl.attr("href"), date, groupCode);
 			dto.addInterparkCode(groupCode);
 			result.add(dto);
 		}
@@ -99,23 +105,23 @@ public class InterParkCrawling {
 		return result;
 	}
 
-	public void save(List<InterPark> dto) {
+	public void save(List<InterParkData> dto) {
 		interparkRepository.save(dto);
 	}
 
-	public List<InterPark> findNewCrawlingData(InterparkType dtype) throws Exception {
-		List<InterPark> ls = crawling(dtype);
+	public List<InterParkData> findNewCrawlingData(InterparkType dtype) throws Exception {
+		List<InterParkData> ls = crawling(dtype);
 		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(dtype);
-		List<InterPark> result = ls.parallelStream()
+		List<InterParkData> result = ls.parallelStream()
 				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode()))).collect(Collectors.toList());
-		result.parallelStream().forEach(InterPark::interparkConsumer);
+		result.parallelStream().forEach(InterParkData::interparkConsumer);
 
 		ChromeOptions chromeOptions = new ChromeOptions();
 		chromeOptions.addArguments("--headless");
 		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
 
 		final WebDriver driver = new ChromeDriver(chromeOptions);
-		for (InterPark obj : result) {
+		for (InterParkData obj : result) {
 			try {
 				if (dtype.equals(InterparkType.Ex)) {
 					this.findPriceDtypeEx(driver, obj);
@@ -130,7 +136,7 @@ public class InterParkCrawling {
 		return result;
 	}
 
-	public void findPrice(WebDriver driver, InterPark dto) {
+	public void findPrice(WebDriver driver, InterParkData dto) {
 		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
 		log.debug(url);
 		driver.get(url);
@@ -180,7 +186,7 @@ public class InterParkCrawling {
 		}
 	}
 
-	public void findPriceDtypeEx(WebDriver driver, InterPark dto) {
+	public void findPriceDtypeEx(WebDriver driver, InterParkData dto) {
 		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
 		log.debug(url);
 		driver.get(url);
@@ -205,8 +211,8 @@ public class InterParkCrawling {
 		}
 	}
 
-	public List<InterPark> invalidDataDelete() {
-		List<InterPark> result = interparkRepository.findByEndDateBefore(LocalDateTime.now());
+	public List<InterParkData> invalidDataDelete() {
+		List<InterParkData> result = interparkRepository.findByEndDateBefore(LocalDateTime.now());
 		result.forEach(m -> {
 			m.setDeleteflag(DeleteFlag.Y);
 		});

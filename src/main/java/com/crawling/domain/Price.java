@@ -1,4 +1,4 @@
-package com.crawling;
+package com.crawling.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,7 +26,7 @@ public class Price {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "INTERPARK_ID")
-	private InterPark interpark;
+	private InterParkData interpark;
 
 	public Price(Long id, String name, int price) {
 		this.id = id;

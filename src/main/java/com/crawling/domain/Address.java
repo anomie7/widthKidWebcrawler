@@ -1,4 +1,4 @@
-package com.crawling;
+package com.crawling.domain;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

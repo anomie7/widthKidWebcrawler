@@ -1,4 +1,4 @@
-package com.crawling;
+package com.crawling.domain;
 
 public enum DeleteFlag {
 Y, N

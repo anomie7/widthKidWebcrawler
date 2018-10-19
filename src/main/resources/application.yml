@@ -11,20 +11,22 @@ spring:
 ---
 spring:
   profiles: local
-#  datasource:
-#   data: classpath:data-h2.sql
-#    sql-script-encoding: UTF-8
-#    driver-class-name: org.h2.Driver
-#    url: jdbc:h2:tcp://localhost/~/test
-#    username: sa
-#    password: 
+  datasource:
+    platform: mariadb
+    sql-script-encoding: UTF-8  
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://192.168.99.100:3306/with-kid
+    username: root
+    password: 1234
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
   h2:
     console:
       enabled: true
-  
 logging:
   level:
     root: info

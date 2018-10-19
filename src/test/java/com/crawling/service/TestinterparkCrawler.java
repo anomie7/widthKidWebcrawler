@@ -1,4 +1,4 @@
-package com.crawling;
+package com.crawling.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,23 +23,29 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.crawling.WebCrawlingPracticeApplication;
+import com.crawling.domain.Address;
+import com.crawling.domain.InterParkData;
+import com.crawling.domain.InterparkType;
+import com.crawling.repository.InterParkRepository;
+
 import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { WebCrawlingPracticeApplication.class })
 @ActiveProfiles("test")
 @Slf4j @Transactional
-public class TestinterparkCrawling {
+public class TestinterparkCrawler {
 
 	@Autowired
 	private InterParkRepository interparkRepository;
 
 	@Autowired
-	private InterParkCrawling interparkCrawling;
+	private InterParkCrawler interparkCrawling;
 
 	@Test
 	public void testCrawling() throws Exception {
-		List<InterPark> ls = null;
+		List<InterParkData> ls = null;
 		for (InterparkType dtype : InterparkType.values()) {
 			ls = interparkCrawling.crawling(dtype);
 			log.debug("result size  : {}", ls.size());
@@ -68,7 +73,7 @@ public class TestinterparkCrawling {
 		
 		List<Address> ls = new ArrayList<>();
 		for (String addressUrl : urlArr) {
-			Address address = InterParkCrawling.findAddressByUrl(addressUrl);
+			Address address = InterParkCrawler.findAddressByUrl(addressUrl);
 			ls.add(address);
 		}
 		
@@ -86,7 +91,7 @@ public class TestinterparkCrawling {
 		String url = "http://ticket.interpark.com/Ticket/Goods/GoodsInfo.asp?GoodsCode=18013439";
 		String fullFilePath = "D:\\imgFolder/test.gif";
 		try {
-			fullFilePath = InterParkCrawling.saveImgFile(url);
+			fullFilePath = InterParkCrawler.saveImgFile(url);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -103,9 +108,9 @@ public class TestinterparkCrawling {
 		WebDriver driver = new ChromeDriver(chromeOptions);
 		
 		for (InterparkType dtype : InterparkType.values()) {
-			List<InterPark> ls;
+			List<InterParkData> ls;
 			ls = interparkCrawling.crawling(dtype).stream().limit(10).collect(Collectors.toList());
-			for (InterPark interParkDTO : ls) {
+			for (InterParkData interParkDTO : ls) {
 				try {
 					if(dtype.equals(InterparkType.Ex)) {
 						interparkCrawling.findPriceDtypeEx(driver, interParkDTO);
@@ -123,7 +128,7 @@ public class TestinterparkCrawling {
 
 	@Test
 	public void testFindEndDateBefore() {
-		List<InterPark> tmp = interparkCrawling.invalidDataDelete();
+		List<InterParkData> tmp = interparkCrawling.invalidDataDelete();
 		log.debug("{}", tmp.size());
 	}
 

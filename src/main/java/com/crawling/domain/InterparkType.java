@@ -1,6 +1,6 @@
-package com.crawling;
+package com.crawling.domain;
 
-enum InterparkType {
+public enum InterparkType {
 	Mu("Fam_M"), Pl("Fam_P"), 
 	Cl("Fam_C"), Ex("Fam_L");
 	
