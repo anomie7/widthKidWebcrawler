@@ -13,7 +13,6 @@ spring:
   profiles: local
   datasource:
     platform: mariadb
-    sql-script-encoding: UTF-8  
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://192.168.99.100:3306/with-kid
     username: root
