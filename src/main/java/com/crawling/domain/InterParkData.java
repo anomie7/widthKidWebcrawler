@@ -23,6 +23,8 @@ import javax.persistence.Transient;
 
 import com.crawling.service.InterParkCrawler;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +33,8 @@ import lombok.ToString;
 @Entity
 @Table(name = "INTERPART_CRAWLING_DATA")
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @ToString
 @Getter
 @EqualsAndHashCode
@@ -49,12 +53,14 @@ public class InterParkData {
 	private String imageFilePath;
 
 	@Enumerated(EnumType.STRING)
+	@Builder.Default
 	private DeleteFlag deleteflag = DeleteFlag.N;
 
 	@Enumerated(EnumType.STRING)
 	private InterparkType dtype;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "interpark")
+	@Builder.Default
 	private List<Price> price = new ArrayList<>();
 
 	private LocalDateTime startDate;
@@ -83,25 +89,6 @@ public class InterParkData {
 		this.name = name;
 		this.location = location;
 		this.dtype = dtype;
-		this.addressUrl = addressUrl;
-		this.date = date;
-		this.groupCode = groupCode;
-	}
-
-	public InterParkData(Long id, String name, String location, Address address, String interparkCode,
-			String imageFilePath, InterparkType dtype, List<Price> price, LocalDateTime startDate,
-			LocalDateTime endDate, String addressUrl, String date, String groupCode) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.location = location;
-		this.address = address;
-		this.interparkCode = interparkCode;
-		this.imageFilePath = imageFilePath;
-		this.dtype = dtype;
-		this.price = price;
-		this.startDate = startDate;
-		this.endDate = endDate;
 		this.addressUrl = addressUrl;
 		this.date = date;
 		this.groupCode = groupCode;
