@@ -33,10 +33,11 @@ public class TestInterParkRepository {
 	
 	@Before
 	public void generateTestObj() {
-		InterParkData obj1 = new InterParkData(null, "뽀로로1", null, null, null, null, InterparkType.Mu, null, LocalDateTime.now(), LocalDateTime.now().plus(Period.ofDays(1)), null, null, null);
-		InterParkData obj2 = new InterParkData(null, "뽀로로2", null, null, null, null, InterparkType.Cl, null, LocalDateTime.now(), LocalDateTime.now().plus(Period.ofDays(2)), null, null, null);
-		InterParkData obj3 = new InterParkData(null, "뽀로로3", null, null, null, null, InterparkType.Pl, null, LocalDateTime.now(), LocalDateTime.now().minusDays(2), null, null, null);
-		InterParkData obj4 = new InterParkData(null, "뽀로로4", null, null, null, null, InterparkType.Ex, null, LocalDateTime.now(), LocalDateTime.now().minusDays(1), null, null, null);
+		InterParkData obj1 = InterParkData.builder().name("뽀로로1").dtype(InterparkType.Mu).startDate(LocalDateTime.now()).endDate(LocalDateTime.now().plus(Period.ofDays(1))).build();
+		InterParkData obj2 = InterParkData.builder().name("뽀로로2").dtype(InterparkType.Cl).startDate(LocalDateTime.now()).endDate(LocalDateTime.now().plus(Period.ofDays(2))).build();
+		InterParkData obj3 = InterParkData.builder().name("뽀로로3").dtype(InterparkType.Pl).startDate(LocalDateTime.now()).endDate(LocalDateTime.now().minusDays(2)).build();
+		InterParkData obj4 = InterParkData.builder().name("뽀로로4").dtype(InterparkType.Ex).startDate(LocalDateTime.now()).endDate(LocalDateTime.now().minusDays(1)).build();
+		
 		testLs.add(obj1);
 		testLs.add(obj2);
 		testLs.add(obj3);

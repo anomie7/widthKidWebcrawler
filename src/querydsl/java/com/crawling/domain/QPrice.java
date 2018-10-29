@@ -17,7 +17,7 @@ import com.querydsl.core.types.dsl.PathInits;
 public class QPrice extends EntityPathBase<Price> {
 
     private static final long serialVersionUID = -926250107L;
-
+	
     private static final PathInits INITS = PathInits.DIRECT2;
 
     public static final QPrice price1 = new QPrice("price1");
