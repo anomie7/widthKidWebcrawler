@@ -1,13 +1,15 @@
 package com.crawling.repository;
 
+import static org.junit.Assert.assertEquals;
+
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -17,68 +19,46 @@ import org.springframework.transaction.annotation.Transactional;
 import com.crawling.WebCrawlingPracticeApplication;
 import com.crawling.domain.InterParkData;
 import com.crawling.domain.InterparkType;
-import com.crawling.repository.InterParkRepository;
-import com.crawling.service.InterParkCrawler;
-
-import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { WebCrawlingPracticeApplication.class })
 @ActiveProfiles("test")
-@Slf4j @Transactional
+@Transactional
 public class TestInterParkRepository {
 
 	@Autowired
 	private InterParkRepository interparkRepository;
 	
-	@Autowired
-	private InterParkCrawler interparkCrawling;
+	private List<InterParkData> testLs = new ArrayList<>();
 	
-//	@Test
-//	public void testSave() throws Exception {
-//		ChromeOptions chromeOptions = new ChromeOptions();
-//		chromeOptions.addArguments("--headless");
-//
-//		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
-//		WebDriver driver = new ChromeDriver(chromeOptions);
-//		
-//		for (InterparkType dtype : InterparkType.values()) {
-//			List<InterParkDTO> ls = interparkCrawling.crawling(dtype);
-//			for (InterParkDTO interParkDTO : ls) {
-//				try {
-//					List<Price> price = interparkCrawling.findPrice(driver, interParkDTO);
-//					for (Price o : price) {
-//						interParkDTO.addPrice(o);
-//					}
-//				} catch (Exception e) {
-//					log.error("가격형식이 다르거나 해당 이벤트가 마감되었습니다.");
-//				}
-//			}
-//			interparkRepository.save(ls);
-//		}
-//	}
+	@Before
+	public void generateTestObj() {
+		InterParkData obj1 = new InterParkData(null, "뽀로로1", null, null, null, null, InterparkType.Mu, null, LocalDateTime.now(), LocalDateTime.now().plus(Period.ofDays(1)), null, null, null);
+		InterParkData obj2 = new InterParkData(null, "뽀로로2", null, null, null, null, InterparkType.Cl, null, LocalDateTime.now(), LocalDateTime.now().plus(Period.ofDays(2)), null, null, null);
+		InterParkData obj3 = new InterParkData(null, "뽀로로3", null, null, null, null, InterparkType.Pl, null, LocalDateTime.now(), LocalDateTime.now().minusDays(2), null, null, null);
+		InterParkData obj4 = new InterParkData(null, "뽀로로4", null, null, null, null, InterparkType.Ex, null, LocalDateTime.now(), LocalDateTime.now().minusDays(1), null, null, null);
+		testLs.add(obj1);
+		testLs.add(obj2);
+		testLs.add(obj3);
+		testLs.add(obj4);
+		interparkRepository.saveAll(testLs);
+	}
 
 	@Test
 	public void testFindInterparkCode() {
 		List<String> tmp = interparkRepository.findInterparkcodeByDtype(InterparkType.values()[0]);
-		log.debug("Dtype : {} count:  {}", InterparkType.values()[0], tmp.stream().count());
+		assertEquals(1, tmp.stream().count());
 	}
 
 	@Test
 	public void testFindEndDateAfter() {
 		List<InterParkData> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
-		tmp.forEach(m -> {
-			log.debug(m.toString());
-		});
-		log.debug("{}", tmp.size());
+		assertEquals(2, tmp.size());
 	}
 
 	@Test
-	public void testFindStartDateBeforeAndEndDate() {
-		List<InterParkData> tmp = interparkRepository.findByEndDateAfter(LocalDateTime.now());
-		tmp.forEach(m -> {
-			log.debug(m.toString());
-		});
-		log.debug("{}", tmp.size());
+	public void findByEndDateBefore() {
+		List<InterParkData> tmp = interparkRepository.findByEndDateBefore(LocalDateTime.now());
+		assertEquals(2, tmp.size());
 	}
 }

@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Getter @Setter
 @Entity @ToString
+@EqualsAndHashCode
 public class Price {
 	@Id
 	@GeneratedValue

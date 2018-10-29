@@ -30,7 +30,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "INTERPART_CRAWLING_DATA")
-@NoArgsConstructor 
+@NoArgsConstructor
 @ToString
 @Getter
 @EqualsAndHashCode
@@ -53,10 +53,10 @@ public class InterParkData {
 
 	@Enumerated(EnumType.STRING)
 	private InterparkType dtype;
-	
-	@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="interpark")
+
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "interpark")
 	private List<Price> price = new ArrayList<>();
-	
+
 	private LocalDateTime startDate;
 	private LocalDateTime endDate;
 
@@ -83,6 +83,25 @@ public class InterParkData {
 		this.name = name;
 		this.location = location;
 		this.dtype = dtype;
+		this.addressUrl = addressUrl;
+		this.date = date;
+		this.groupCode = groupCode;
+	}
+
+	public InterParkData(Long id, String name, String location, Address address, String interparkCode,
+			String imageFilePath, InterparkType dtype, List<Price> price, LocalDateTime startDate,
+			LocalDateTime endDate, String addressUrl, String date, String groupCode) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.location = location;
+		this.address = address;
+		this.interparkCode = interparkCode;
+		this.imageFilePath = imageFilePath;
+		this.dtype = dtype;
+		this.price = price;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.addressUrl = addressUrl;
 		this.date = date;
 		this.groupCode = groupCode;
@@ -115,19 +134,20 @@ public class InterParkData {
 		this.imageFilePath = InterParkCrawler.saveImgFile("http://ticket.interpark.com/" + this.groupCode);
 		;
 	}
-	
-//	public void addPrice() {
-//		ChromeOptions chromeOptions = new ChromeOptions();
-//		chromeOptions.addArguments("--headless");
-//		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
-//		WebDriver driver = new ChromeDriver(chromeOptions);
-//		
-//		if(dtype.equals(InterparkType.Ex)) {
-//			price = InterParkCrawling.findPriceDtypeEx(driver, this);
-//		}else {
-//			price = InterParkCrawling.findPrice(driver, this);
-//		}
-//	}
+
+	// public void addPrice() {
+	// ChromeOptions chromeOptions = new ChromeOptions();
+	// chromeOptions.addArguments("--headless");
+	// System.setProperty("webdriver.chrome.driver",
+	// "src/main/resources/chromedriver.exe");
+	// WebDriver driver = new ChromeDriver(chromeOptions);
+	//
+	// if(dtype.equals(InterparkType.Ex)) {
+	// price = InterParkCrawling.findPriceDtypeEx(driver, this);
+	// }else {
+	// price = InterParkCrawling.findPrice(driver, this);
+	// }
+	// }
 
 	public static void interparkConsumer(InterParkData m) {
 		try {
@@ -140,9 +160,15 @@ public class InterParkData {
 	}
 
 	public void addPrice(Price price) {
-		if(this.price != null && !this.price.contains(price)) {
+		if (this.price != null && !this.price.contains(price)) {
 			this.price.add(price);
 		}
 		price.setInterpark(this);
+	}
+
+	public void addPrice(List<Price> prices) {
+		if(!this.price.containsAll(prices)) {
+			this.price = prices;
+		}
 	}
 }

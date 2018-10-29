@@ -15,5 +15,10 @@ public class InterparkController {
 	public void findNewData() throws Exception {
 		scheduler.crawlingInterparkData();
 	}
+	
+	@GetMapping(value="/delete")
+	public void invalidDateUpdate() throws Exception {
+		scheduler.invalidDataDelete();
+	}
 
 }

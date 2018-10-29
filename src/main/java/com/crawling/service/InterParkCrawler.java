@@ -106,7 +106,7 @@ public class InterParkCrawler {
 	}
 
 	public void save(List<InterParkData> dto) {
-		interparkRepository.save(dto);
+		interparkRepository.saveAll(dto);
 	}
 
 	public List<InterParkData> findNewCrawlingData(InterparkType dtype) throws Exception {
@@ -216,7 +216,7 @@ public class InterParkCrawler {
 		result.forEach(m -> {
 			m.setDeleteflag(DeleteFlag.Y);
 		});
-		interparkRepository.save(result);
+		interparkRepository.saveAll(result);
 		return result;
 	}
 }

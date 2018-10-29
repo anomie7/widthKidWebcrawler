@@ -122,7 +122,7 @@ public class TestinterparkCrawler {
 					log.error(e.getMessage());
 				}
 			}
-			interparkRepository.save(ls);
+			interparkRepository.saveAll(ls);
 		}
 	}
 

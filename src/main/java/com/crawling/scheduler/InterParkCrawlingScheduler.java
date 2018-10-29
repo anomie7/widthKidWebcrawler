@@ -26,8 +26,13 @@ public class InterParkCrawlingScheduler {
 		log.info("crawling start!");
 		for (InterparkType dtype : InterparkType.values()) {
 			List<InterParkData> tmp = interparkCrawling.findNewCrawlingData(dtype);
-			interparkRepository.save(tmp);
+			interparkRepository.saveAll(tmp);
 		}
 		log.info("crawling finish!");
+	}
+	
+	@Scheduled(cron="0 35 * * * *")
+	public void invalidDataDelete() {
+		interparkCrawling.invalidDataDelete();
 	}
 }
