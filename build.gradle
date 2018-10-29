@@ -10,7 +10,7 @@ buildscript {
 	}
 }
 plugins {
-    id 'io.franzbecker.gradle-lombok' version '1.7'
+  	id "io.franzbecker.gradle-lombok" version "1.10"
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.9"
 }
 
@@ -65,8 +65,8 @@ dependencies {
 	
 	runtime('com.h2database:h2')
 	
-	compileOnly 'org.projectlombok:lombok:1.16.4'
-	testCompileOnly "org.projectlombok:lombok:1.16.4"
+	compileOnly('org.projectlombok:lombok')
+	testCompileOnly "org.projectlombok:lombok"
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
