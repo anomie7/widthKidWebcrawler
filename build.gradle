@@ -1,20 +1,38 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.17.BUILD-SNAPSHOT'
+		springBootVersion = '2.0.5.RELEASE'
 	}
 	repositories {
 		mavenCentral()
-		maven { url "https://repo.spring.io/snapshot" }
-		maven { url "https://repo.spring.io/milestone" }
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '1.7'
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.9"
+}
+
+def generatedClassesPath= "build/generated/source/querydsl/main"
+querydsl {
+    jpa = true
+    querydslSourcesDir = generatedClassesPath
+}
+
+// plugin needed so that the
+project.afterEvaluate {
+    project.tasks.compileQuerydsl.options.compilerArgs = [
+            "-proc:only",
+            "-processor", project.querydsl.processors() +
+                    ',lombok.launch.AnnotationProcessorHider$AnnotationProcessor'
+    ]
+}
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 
 group = 'com.spring-boot.webservice'
 version = '0.0.1-SNAPSHOT'
@@ -26,20 +44,32 @@ repositories {
 	maven { url "https://repo.spring.io/milestone" }
 }
 
-
 dependencies {
+	//querydsl
+	compile('com.querydsl:querydsl-core')
+	compile('com.querydsl:querydsl-apt') 
+	compile('com.querydsl:querydsl-jpa')
+	
+	//crawling utill
 	compile('org.jsoup:jsoup:1.11.3')
+	compile('org.seleniumhq.selenium:selenium-java')
+	
+	//spring-boot
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-mustache')
 	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('org.seleniumhq.selenium:selenium-java')
+	runtime('org.springframework.boot:spring-boot-devtools')
+	
 	compile('org.hibernate:hibernate-java8')
 	compile('org.mariadb.jdbc:mariadb-java-client')
-	runtime('org.springframework.boot:spring-boot-devtools')
+	
 	runtime('com.h2database:h2')
+	
 	compileOnly 'org.projectlombok:lombok:1.16.4'
-	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompileOnly "org.projectlombok:lombok:1.16.4"
+	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
+
+
 
 task stage(dependsOn: ['build', 'clean'])
