@@ -1,8 +1,5 @@
 package com.crawling.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDateTime;
@@ -19,6 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +27,8 @@ import com.crawling.domain.InterParkData;
 import com.crawling.domain.InterparkType;
 import com.crawling.domain.Price;
 import com.crawling.domain.QInterParkData;
-import com.jayway.jsonpath.Option;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 
@@ -117,23 +116,18 @@ public class TestQueryDsl {
 	
 	@Test
 	public void testDynamicQuery() {
-		QInterParkData data = QInterParkData.interParkData;
-		JPAQuery query = new JPAQuery(em);
-		BooleanBuilder build = new BooleanBuilder();
 		String name = "뽀로로4";
 		InterparkType dtype = InterparkType.Ex;
 		
 		Optional<String> nameOpt = Optional.ofNullable(name);
 		Optional<InterparkType> dtypeOpt = Optional.ofNullable(dtype);
 		
-		nameOpt.ifPresent(s -> build.and(data.name.eq(s)));
-		dtypeOpt.ifPresent(t -> build.and(data.dtype.eq(t)));
+		Predicate predicate = interparkRepository.getPredicate(nameOpt, dtypeOpt);
+		Page<InterParkData> obj = interparkRepository.findAll(predicate, PageRequest.of(0, 10));
 		
-		query.from(data).where(build);
-		InterParkData obj = (InterParkData) query.fetchOne();
-		
-		assertEquals(nameOpt.get(), obj.getName());
-		assertEquals(dtypeOpt.get(), obj.getDtype());
+		InterParkData interParkData = obj.getContent().get(0);
+		assertEquals(nameOpt.get(), interParkData.getName());
+		assertEquals(dtypeOpt.get(), interParkData.getDtype());
 	}
 
 }
