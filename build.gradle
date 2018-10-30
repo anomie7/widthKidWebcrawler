@@ -60,6 +60,10 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	
+	//swagger
+	compile 'io.springfox:springfox-swagger2:2.6.1'
+	compile 'io.springfox:springfox-swagger-ui:2.6.1'
+	
 	compile('org.hibernate:hibernate-java8')
 	compile('org.mariadb.jdbc:mariadb-java-client')
 	

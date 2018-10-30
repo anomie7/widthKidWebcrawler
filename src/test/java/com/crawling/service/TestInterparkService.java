@@ -1,47 +1,45 @@
-package com.crawling.repository;
+package com.crawling.service;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.crawling.WebCrawlingPracticeApplication;
 import com.crawling.domain.Address;
-import com.crawling.domain.DeleteFlag;
+import com.crawling.domain.EventDto;
 import com.crawling.domain.InterParkData;
 import com.crawling.domain.InterparkType;
 import com.crawling.domain.Price;
 import com.crawling.domain.SearchVO;
-import com.querydsl.core.types.Predicate;
+import com.crawling.repository.InterParkRepository;
+import com.crawling.web.response.EventResponse;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = { WebCrawlingPracticeApplication.class })
 @ActiveProfiles("test")
-@Transactional
-public class TestInterparkPredicateProvider {
-	@PersistenceContext
-	private EntityManager em;
+public class TestInterparkService {
+	@Autowired
+	private InterparkService interparkService;
 
 	@Autowired
 	private InterParkRepository interparkRepository;
-	
+
 	private List<InterParkData> testLs = new ArrayList<>();
 	private List<Price> prices = new ArrayList<>();
 	private List<Price> prices2 = new ArrayList<>();
@@ -96,7 +94,8 @@ public class TestInterparkPredicateProvider {
 	}
 
 	@Test
-	public void testDynamicQuery() {
+	@Transactional
+	public void testSearchEvent() {
 		String city = "서울";
 		InterparkType dtype = InterparkType.Mu;
 		LocalDateTime start = LocalDateTime.now();
@@ -105,20 +104,18 @@ public class TestInterparkPredicateProvider {
 		SearchVO search = SearchVO.builder().city(city).kindOf(dtype).startDateTime(start).endDateTime(end)
 				.build();
 
-		Predicate predicate = InterparkPredicateProvider.getSearchPredicate(search);
-		Page<InterParkData> obj = interparkRepository.findAll(predicate, PageRequest.of(0, 10));
-
-		List<InterParkData> ls = obj.getContent();
-		ls.forEach(interParkData -> {
-			assertThat(interParkData.getAddress().getCity(), containsString(city));
-			assertEquals(dtype, interParkData.getDtype());
-		});
-
-		assertThat(ls.size(), equalTo(1));
+		Pageable pageable = PageRequest.of(0, 10);
+		EventResponse response = interparkService.searchEvent(search, pageable);
+		EventDto eventDto = response.getEvents().get(0);
+		assertThat(eventDto.getKindOf(), equalTo(dtype));
+		for (int i = 0; i < prices.size(); i++) {
+			assertThat(eventDto.getPrice().get(i).getId(), equalTo(prices.get(i).getId()));
+		}
 	}
-
+	
 	@Test
-	public void testDynamicQueryValueEqNull() {
+	@Transactional
+	public void testSearchEventValueEqNull() {
 		String city = null;
 		InterparkType dtype = null;
 		LocalDateTime start = null;
@@ -126,15 +123,10 @@ public class TestInterparkPredicateProvider {
 
 		SearchVO search = SearchVO.builder().city(city).kindOf(dtype).startDateTime(start).endDateTime(end)
 				.build();
-
-		Predicate predicate = InterparkPredicateProvider.getSearchPredicate(search);
-		Page<InterParkData> obj = interparkRepository.findAll(predicate, PageRequest.of(0, 10));
-
-		List<InterParkData> ls = obj.getContent();
-		ls.forEach(interParkData -> {
-			assertThat(interParkData.getDeleteflag(), equalTo(DeleteFlag.N));
-		});
-
-		assertThat(4, equalTo(ls.size()));
+		
+		Pageable pageable = PageRequest.of(0, 10);
+		EventResponse response = interparkService.searchEvent(search, pageable);
+		assertEquals(4, response.getEvents().size());
 	}
+
 }
