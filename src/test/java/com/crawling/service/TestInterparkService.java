@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +28,7 @@ import com.crawling.domain.InterparkType;
 import com.crawling.domain.Price;
 import com.crawling.domain.SearchVO;
 import com.crawling.repository.InterParkRepository;
-import com.crawling.web.EventResponse;
+import com.crawling.web.response.EventResponse;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { WebCrawlingPracticeApplication.class })
@@ -102,12 +101,7 @@ public class TestInterparkService {
 		LocalDateTime start = LocalDateTime.now();
 		LocalDateTime end = start.plusDays(7);
 
-		Optional<String> cityOpt = Optional.ofNullable(city);
-		Optional<InterparkType> dtypeOpt = Optional.ofNullable(dtype);
-		Optional<LocalDateTime> startOpt = Optional.ofNullable(start);
-		Optional<LocalDateTime> endOpt = Optional.ofNullable(end);
-
-		SearchVO search = SearchVO.builder().city(cityOpt).kindOf(dtypeOpt).startDateTime(startOpt).endDateTime(endOpt)
+		SearchVO search = SearchVO.builder().city(city).kindOf(dtype).startDateTime(start).endDateTime(end)
 				.build();
 
 		Pageable pageable = PageRequest.of(0, 10);
@@ -126,13 +120,8 @@ public class TestInterparkService {
 		InterparkType dtype = null;
 		LocalDateTime start = null;
 		LocalDateTime end = null;
-		
-		Optional<String> cityOpt = Optional.ofNullable(city);
-		Optional<InterparkType> dtypeOpt = Optional.ofNullable(dtype);
-		Optional<LocalDateTime> startOpt = Optional.ofNullable(start);
-		Optional<LocalDateTime> endOpt = Optional.ofNullable(end);
-		
-		SearchVO search = SearchVO.builder().city(cityOpt).kindOf(dtypeOpt).startDateTime(startOpt).endDateTime(endOpt)
+
+		SearchVO search = SearchVO.builder().city(city).kindOf(dtype).startDateTime(start).endDateTime(end)
 				.build();
 		
 		Pageable pageable = PageRequest.of(0, 10);

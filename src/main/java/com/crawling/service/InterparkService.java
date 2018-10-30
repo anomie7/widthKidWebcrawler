@@ -10,7 +10,7 @@ import com.crawling.domain.InterParkData;
 import com.crawling.domain.SearchVO;
 import com.crawling.repository.InterParkRepository;
 import com.crawling.repository.InterparkPredicateProvider;
-import com.crawling.web.EventResponse;
+import com.crawling.web.response.EventResponse;
 
 @Service
 public class InterparkService {
