@@ -31,6 +31,8 @@ logging:
     root: info
 #    org.springframwork.web.client: info
 #    org.hibernate.type: trace
+server:
+  port: 8081
 ---
 spring:
   profiles: test
