@@ -1,20 +1,27 @@
 package com.crawling.domain;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@NoArgsConstructor
+@Setter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class SearchVO {
-	private Optional<String> city;
-	private Optional<InterparkType> kindOf;
-	private Optional<LocalDateTime> startDateTime;
-	private Optional<LocalDateTime> endDateTime;
+	private String city;
+	private InterparkType kindOf;
+	
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	private LocalDateTime startDateTime;
+    
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	private LocalDateTime endDateTime;
 }
