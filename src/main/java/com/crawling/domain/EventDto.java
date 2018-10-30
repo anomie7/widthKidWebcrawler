@@ -3,6 +3,7 @@ package com.crawling.domain;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,7 @@ public class EventDto {
 	private LocalDateTime endDate;
 	private InterparkType kindOf;
 	@Builder.Default
-	private List<Price> price = new ArrayList<>();
+	private List<PriceDto> price = new ArrayList<>();
 
 	public static EventDto fromEntity(InterParkData entity) {
 		EventDto dto = EventDto.builder()
@@ -30,9 +31,13 @@ public class EventDto {
 				.location(entity.getLocation())
 				.startDate(entity.getStartDate())
 				.endDate(entity.getEndDate())
-				.price(entity.getPrice())
 				.kindOf(entity.getDtype())
 				.build();
+		dto.addPrice(entity.getPrice());
 		return dto;
+	}
+
+	private void addPrice(List<Price> price) {
+		this.price = price.stream().map(PriceDto::fromEntity).collect(Collectors.toList());
 	}
 }
