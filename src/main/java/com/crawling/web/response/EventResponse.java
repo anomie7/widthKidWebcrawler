@@ -1,4 +1,4 @@
-package com.crawling.web;
+package com.crawling.web.response;
 
 import java.util.List;
 import java.util.stream.Collectors;
