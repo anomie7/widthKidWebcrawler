@@ -18,7 +18,7 @@ public class PageResponse<T> {
     private boolean isFirstPage;
     
 	public void addPageInfo(Page<T> entity) {
-		this.currentPageNum = entity.getNumber() + 1;
+		this.currentPageNum = entity.getNumber();
 		this.totalPageSize = entity.getTotalPages();
 		this.hasNextPage = entity.hasNext();
 		this.hasPriviousPage = entity.hasPrevious();
