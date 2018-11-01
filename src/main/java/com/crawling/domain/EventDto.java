@@ -1,6 +1,6 @@
 package com.crawling.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,9 +18,10 @@ public class EventDto {
 	private Long eventId;
 	private String name;
 	private String location;
-	private LocalDateTime startDate;
-	private LocalDateTime endDate;
+	private LocalDate startDate;
+	private LocalDate endDate;
 	private InterparkType kindOf;
+	private String imageFilePath;
 	@Builder.Default
 	private List<PriceDto> price = new ArrayList<>();
 
@@ -29,9 +30,10 @@ public class EventDto {
 				.eventId(entity.getId())
 				.name(entity.getName())
 				.location(entity.getLocation())
-				.startDate(entity.getStartDate())
-				.endDate(entity.getEndDate())
+				.startDate(entity.getStartDate().toLocalDate())
+				.endDate(entity.getEndDate().toLocalDate())
 				.kindOf(entity.getDtype())
+				.imageFilePath(entity.getImageFilePath())
 				.build();
 		dto.addPrice(entity.getPrice());
 		return dto;
