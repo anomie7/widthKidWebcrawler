@@ -86,6 +86,7 @@ public class InterParkData {
 	public InterParkData(Long id, String name, String location, InterparkType dtype, String addressUrl, String date,
 			String groupCode) {
 		super();
+		this.deleteflag = DeleteFlag.N;
 		this.id = id;
 		this.name = name;
 		this.location = location;
@@ -148,6 +149,10 @@ public class InterParkData {
 	}
 
 	public void addPrice(Price price) {
+		if(this.price == null) {
+			this.price = new ArrayList<>();
+		}
+		
 		if (this.price != null && !this.price.contains(price)) {
 			this.price.add(price);
 		}

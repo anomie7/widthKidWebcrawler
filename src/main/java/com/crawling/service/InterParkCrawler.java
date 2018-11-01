@@ -77,7 +77,7 @@ public class InterParkCrawler {
 
 		BufferedImage in = ImageIO.read(new URL(imgUrl).openStream());
 		ImageIO.write(in, ext, new File(saveFilePath));
-		return saveFilePath;
+		return "/imgFolder/" + LocalDate.now().format(dirFormattor) + "/" + fileName;
 	}
 
 	public List<InterParkData> crawling(InterparkType dtype) throws Exception {
