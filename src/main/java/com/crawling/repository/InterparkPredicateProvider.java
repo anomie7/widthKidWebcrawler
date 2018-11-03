@@ -12,10 +12,10 @@ import com.querydsl.core.types.Predicate;
 
 public class InterparkPredicateProvider {
 	public static Predicate getSearchPredicate(SearchVO search) {
-		Optional<String> cityOpt = Optional.ofNullable(search.getCity());
+		Optional<String> cityOpt = Optional.ofNullable(search.getRegion());
 		Optional<InterparkType> dtypeOpt = Optional.ofNullable(search.getKindOf());
-		Optional<LocalDateTime> startOpt = Optional.ofNullable(search.getStartDateTime());
-		Optional<LocalDateTime> endOpt = Optional.ofNullable(search.getEndDateTime());
+		Optional<LocalDateTime> startOpt = Optional.ofNullable(search.getStartDate());
+		Optional<LocalDateTime> endOpt = Optional.ofNullable(search.getEndDate());
 		
 		BooleanBuilder build = new BooleanBuilder();
 		QInterParkData data = QInterParkData.interParkData;

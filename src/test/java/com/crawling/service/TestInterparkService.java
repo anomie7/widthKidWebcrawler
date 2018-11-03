@@ -101,7 +101,7 @@ public class TestInterparkService {
 		LocalDateTime start = LocalDateTime.now();
 		LocalDateTime end = start.plusDays(7);
 
-		SearchVO search = SearchVO.builder().city(city).kindOf(dtype).startDateTime(start).endDateTime(end)
+		SearchVO search = SearchVO.builder().region(city).kindOf(dtype).startDate(start).endDate(end)
 				.build();
 
 		Pageable pageable = PageRequest.of(0, 10);
@@ -121,7 +121,7 @@ public class TestInterparkService {
 		LocalDateTime start = null;
 		LocalDateTime end = null;
 
-		SearchVO search = SearchVO.builder().city(city).kindOf(dtype).startDateTime(start).endDateTime(end)
+		SearchVO search = SearchVO.builder().region(city).kindOf(dtype).startDate(start).endDate(end)
 				.build();
 		
 		Pageable pageable = PageRequest.of(0, 10);
