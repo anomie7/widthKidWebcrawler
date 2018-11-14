@@ -5,19 +5,12 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
-import com.crawling.domain.DeleteFlag;
 import com.crawling.domain.InterParkData;
 import com.crawling.domain.InterparkType;
-import com.crawling.domain.QInterParkData;
-import com.crawling.domain.SearchVO;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 
-public interface InterParkRepository
-		extends JpaRepository<InterParkData, Long>, QuerydslPredicateExecutor<InterParkData> {
+public interface InterParkRepository extends JpaRepository<InterParkData, Long> {
 	public List<InterParkData> findAllByDtype(InterparkType dtype);
 
 	public List<InterParkData> findByEndDateBefore(LocalDateTime now);
