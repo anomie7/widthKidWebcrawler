@@ -9,25 +9,6 @@ buildscript {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
-plugins {
-  	id "io.franzbecker.gradle-lombok" version "1.10"
-    id "com.ewerk.gradle.plugins.querydsl" version "1.0.9"
-}
-
-def generatedClassesPath= "build/generated/source/querydsl/main"
-querydsl {
-    jpa = true
-    querydslSourcesDir = generatedClassesPath
-}
-
-// plugin needed so that the
-project.afterEvaluate {
-    project.tasks.compileQuerydsl.options.compilerArgs = [
-            "-proc:only",
-            "-processor", project.querydsl.processors() +
-                    ',lombok.launch.AnnotationProcessorHider$AnnotationProcessor'
-    ]
-}
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -45,11 +26,6 @@ repositories {
 }
 
 dependencies {
-	//querydsl
-	compile('com.querydsl:querydsl-core')
-	compile('com.querydsl:querydsl-apt') 
-	compile('com.querydsl:querydsl-jpa')
-	
 	//crawling utill
 	compile('org.jsoup:jsoup:1.11.3')
 	compile('org.seleniumhq.selenium:selenium-java')
@@ -60,10 +36,6 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	
-	//swagger
-	compile 'io.springfox:springfox-swagger2:2.6.1'
-	compile 'io.springfox:springfox-swagger-ui:2.6.1'
-	
 	compile('org.hibernate:hibernate-java8')
 	compile('org.mariadb.jdbc:mariadb-java-client')
 	
@@ -73,7 +45,6 @@ dependencies {
 	testCompileOnly "org.projectlombok:lombok"
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
-
 
 
 task stage(dependsOn: ['build', 'clean'])

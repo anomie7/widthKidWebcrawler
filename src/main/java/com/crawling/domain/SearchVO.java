@@ -16,12 +16,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SearchVO {
-	private String city;
+	private String region;
 	private InterparkType kindOf;
 	
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-	private LocalDateTime startDateTime;
+	private LocalDateTime startDate;
     
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-	private LocalDateTime endDateTime;
+	private LocalDateTime endDate;
 }
