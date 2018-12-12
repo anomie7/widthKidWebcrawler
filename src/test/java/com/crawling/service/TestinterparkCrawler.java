@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.crawling.WebCrawlingPracticeApplication;
 import com.crawling.domain.Address;
-import com.crawling.domain.InterParkData;
+import com.crawling.domain.InterParkContent;
 import com.crawling.domain.InterparkType;
 import com.crawling.repository.InterParkRepository;
 
@@ -45,7 +45,7 @@ public class TestinterparkCrawler {
 
 	@Test
 	public void testCrawling() throws Exception {
-		List<InterParkData> ls = null;
+		List<InterParkContent> ls = null;
 		for (InterparkType dtype : InterparkType.values()) {
 			ls = interparkCrawling.crawling(dtype);
 			log.debug("result size  : {}", ls.size());
@@ -108,9 +108,9 @@ public class TestinterparkCrawler {
 		WebDriver driver = new ChromeDriver(chromeOptions);
 		
 		for (InterparkType dtype : InterparkType.values()) {
-			List<InterParkData> ls;
+			List<InterParkContent> ls;
 			ls = interparkCrawling.crawling(dtype).stream().limit(10).collect(Collectors.toList());
-			for (InterParkData interParkDTO : ls) {
+			for (InterParkContent interParkDTO : ls) {
 				try {
 					if(dtype.equals(InterparkType.Ex)) {
 						interparkCrawling.findPriceDtypeEx(driver, interParkDTO);
@@ -128,7 +128,7 @@ public class TestinterparkCrawler {
 
 	@Test
 	public void testFindEndDateBefore() {
-		List<InterParkData> tmp = interparkCrawling.invalidDataDelete();
+		List<InterParkContent> tmp = interparkCrawling.invalidDataDelete();
 		log.debug("{}", tmp.size());
 	}
 

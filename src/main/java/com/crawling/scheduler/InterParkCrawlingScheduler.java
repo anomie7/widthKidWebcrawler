@@ -2,11 +2,11 @@ package com.crawling.scheduler;
 
 import java.util.List;
 
+import com.crawling.domain.InterParkContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.crawling.domain.InterParkData;
 import com.crawling.domain.InterparkType;
 import com.crawling.repository.InterParkRepository;
 import com.crawling.service.InterParkCrawler;
@@ -25,7 +25,7 @@ public class InterParkCrawlingScheduler {
 	public void crawlingInterparkData() throws Exception {
 		log.info("crawling start!");
 		for (InterparkType dtype : InterparkType.values()) {
-			List<InterParkData> tmp = interparkCrawling.findNewCrawlingData(dtype);
+			List<InterParkContent> tmp = interparkCrawling.findNewCrawlingData(dtype);
 			interparkRepository.saveAll(tmp);
 		}
 		log.info("crawling finish!");

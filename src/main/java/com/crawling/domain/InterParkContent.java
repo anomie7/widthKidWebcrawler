@@ -39,7 +39,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @EqualsAndHashCode
-public class InterParkData {
+public class InterParkContent {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name = "INTERPARK_ID")
@@ -76,15 +76,15 @@ public class InterParkData {
 	@Transient
 	private String groupCode;
 
-	public InterParkData(Long id, String name, String location, InterparkType dtype) {
+	public InterParkContent(Long id, String name, String location, InterparkType dtype) {
 		this.id = id;
 		this.name = name;
 		this.location = location;
 		this.dtype = dtype;
 	}
 
-	public InterParkData(Long id, String name, String location, InterparkType dtype, String addressUrl, String date,
-			String groupCode) {
+	public InterParkContent(Long id, String name, String location, InterparkType dtype, String addressUrl, String date,
+							String groupCode) {
 		super();
 		this.deleteflag = DeleteFlag.N;
 		this.id = id;
@@ -138,7 +138,7 @@ public class InterParkData {
 	// }
 	// }
 
-	public static void interparkConsumer(InterParkData m) {
+	public static void interparkConsumer(InterParkContent m) {
 		try {
 			m.addAddress();
 			m.addStartDateAndEndDate();

@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.crawling.WebCrawlingPracticeApplication;
-import com.crawling.domain.InterParkData;
+import com.crawling.domain.InterParkContent;
 import com.crawling.domain.InterparkType;
 import com.crawling.repository.InterParkRepository;
 
@@ -27,11 +27,11 @@ public class IntegrationTestCrawler {
 	private InterParkRepository interparkRepository;
 	@Autowired
 	private InterParkCrawler interparkCrawling;
-	
+
 	@Test
 	public void testFindNewCrawlingData() throws Exception {
 		for (InterparkType dtype : InterparkType.values()) {
-			List<InterParkData> tmp = interparkCrawling.findNewCrawlingData(dtype);
+			List<InterParkContent> tmp = interparkCrawling.findNewCrawlingData(dtype);
 			interparkRepository.save(tmp);
 			log.debug("{}", tmp.size());
 		}
