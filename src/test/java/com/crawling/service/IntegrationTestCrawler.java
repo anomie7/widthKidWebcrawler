@@ -1,4 +1,4 @@
-/*package com.crawling.service;
+package com.crawling.service;
 
 import java.util.List;
 
@@ -18,24 +18,25 @@ import com.crawling.repository.InterParkRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { WebCrawlingPracticeApplication.class })
+@SpringBootTest(classes = {WebCrawlingPracticeApplication.class})
 @ActiveProfiles("test")//통합테스트므로 인메모리보다는 프로덕트와 동일한 환경에서 해야할듯..도커도 있으니깐 쉽게 가능할것임
-@Slf4j @Transactional
+@Slf4j
+@Transactional
 public class IntegrationTestCrawler {
 
-	@Autowired
-	private InterParkRepository interparkRepository;
-	@Autowired
-	private InterParkCrawler interparkCrawling;
+    @Autowired
+    private InterParkRepository interparkRepository;
 
-	@Test
-	public void testFindNewCrawlingData() throws Exception {
-		for (InterparkType dtype : InterparkType.values()) {
-			List<InterParkContent> tmp = interparkCrawling.findNewCrawlingData(dtype);
-			interparkRepository.save(tmp);
-			log.debug("{}", tmp.size());
-		}
-	}
+    @Autowired
+    private InterParkCrawler interparkCrawling;
+
+    @Test
+    public void testFindNewCrawlingData() throws Exception {
+        for (InterparkType dtype : InterparkType.values()) {
+            List<InterParkContent> tmp = interparkCrawling.findNewCrawlingData(dtype);
+            interparkRepository.saveAll(tmp);
+            log.debug("{}", tmp.size());
+        }
+    }
 
 }
-*/

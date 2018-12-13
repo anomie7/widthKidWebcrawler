@@ -9,8 +9,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -39,181 +37,132 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Transactional
 public class InterParkCrawler {
-	@Autowired
-	private InterParkRepository interparkRepository;
-	private final String URL = "http://ticket.interpark.com/TPGoodsList.asp?Ca=Fam&SubCa=";
-	private final String cssQuery = ".Rk_gen2 .stit tbody tr";
+    @Autowired
+    private InterParkRepository interparkRepository;
 
-	public static Address findAddressByUrl(String addressUrl) throws IOException {
-		Document doc = Jsoup.connect(addressUrl).get();
-		Elements el = doc
-				.select("body table > tbody > tr:nth-child(2) > td:nth-child(3) > table > tbody > tr:nth-child(2)")
-				.select("table > tbody > tr > td:nth-child(2)").select("table > tbody > tr:nth-child(3) > td");
-		String address = el.text().replace("주 소 :", "").trim();
-		return Address.convertStringToAddressObj(address);
-	}
+    public static Address findAddressByUrl(String addressUrl) throws IOException {
+        Document doc = Jsoup.connect(addressUrl).get();
+        Elements el = doc
+                .select("body table > tbody > tr:nth-child(2) > td:nth-child(3) > table > tbody > tr:nth-child(2)")
+                .select("table > tbody > tr > td:nth-child(2)").select("table > tbody > tr:nth-child(3) > td");
+        String address = el.text().replace("주 소 :", "").trim();
+        return Address.convertStringToAddressObj(address);
+    }
 
-	public static String saveImgFile(String url) throws IOException {
-		DateTimeFormatter dirFormattor = DateTimeFormatter.ofPattern("yyyyMMdd");
-		DateTimeFormatter fileNameFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+    public static String saveImgFile(String url) throws IOException {
+        DateTimeFormatter dirFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        DateTimeFormatter fileNameFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
-		Document doc = Jsoup.connect(url).get();
-		String imgUrl = doc.getElementsByClass("poster").select("img").attr("src");
+        Document doc = Jsoup.connect(url).get();
+        String imgUrl = doc.getElementsByClass("poster").select("img").attr("src");
 
-		log.debug(imgUrl);
+        log.debug(imgUrl);
 
-		String folderPath = "D:/imgFolder/" + LocalDate.now().format(dirFormattor) + "/";
-		String ext = imgUrl.substring(imgUrl.lastIndexOf('.') + 1, imgUrl.length()); // 이미지 확장자 추출
-		String fileName = LocalDateTime.now().format(fileNameFormatter) + "." + ext;
-		String saveFilePath = folderPath + fileName;
-		File dir = new File(folderPath);
+        String folderPath = "D:/imgFolder/" + LocalDate.now().format(dirFormatter) + "/";
+        String ext = imgUrl.substring(imgUrl.lastIndexOf('.') + 1, imgUrl.length()); // 이미지 확장자 추출
+        String fileName = LocalDateTime.now().format(fileNameFormatter) + "." + ext;
+        String saveFilePath = folderPath + fileName;
+        File dir = new File(folderPath);
 
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
-		BufferedImage in = ImageIO.read(new URL(imgUrl).openStream());
-		ImageIO.write(in, ext, new File(saveFilePath));
-		return "/imgFolder/" + LocalDate.now().format(dirFormattor) + "/" + fileName;
-	}
+        BufferedImage in = ImageIO.read(new URL(imgUrl).openStream());
+        ImageIO.write(in, ext, new File(saveFilePath));
+        return "/imgFolder/" + LocalDate.now().format(dirFormatter) + "/" + fileName;
+    }
 
-	public List<InterParkContent> crawling(InterparkType dtype) throws Exception {
-		Document doc = Jsoup.connect(URL + dtype.getSubCa()).get();
-		Elements el = doc.select(cssQuery);
-		List<InterParkContent> result = new ArrayList<>();
+    public List<InterParkContent> findNewCrawlingData(InterparkType type) throws Exception {
+        List<InterParkContent> contents = crawling(type);
+        final List<String> existInterparkcodes = interparkRepository.findInterparkcodeByDtype(type);
 
-		for (Element element : el) {
-			String name = element.getElementsByClass("RKtxt").select("a").text().trim();
-			Elements addressUrl = element.getElementsByClass("Rkdate").select("a");
-			String location = addressUrl.text().trim();
+        List<InterParkContent> newContents;
+        newContents = contents.parallelStream()
+                .filter(content -> existInterparkcodes.stream().noneMatch(existCode -> existCode.equals(content.getInterparkCode())))
+                .collect(Collectors.toList());
+        newContents.parallelStream().forEach(InterParkContent::addMembers);
 
-			String date = element.child(3).text();
-			String groupCode = element.select(".fw_bold a").attr("href");
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
+        System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
 
-			InterParkContent dto = new InterParkContent(null, name, location, dtype, addressUrl.attr("href"), date, groupCode);
-			dto.addInterparkCode(groupCode);
-			result.add(dto);
-		}
+        final WebDriver driver = new ChromeDriver(chromeOptions);
+        for (InterParkContent newContent : newContents) {
+            try {
+                this.findPrice(driver, newContent);
+            } catch (Exception e) {
+                log.info(newContent.toString());
+                log.error(e.getMessage());
+            }
+        }
+        return newContents;
+    }
 
-		if (el.size() != result.size()) {
-			throw new SizeNotMatchedException("인터파크에서 가져온 데이터와 가공한 데이터의 사이즈가 불일치합니다.");
-		}
+    public List<InterParkContent> crawling(InterparkType type) throws Exception {
+        String URL = "http://ticket.interpark.com/TPGoodsList.asp?Ca=Fam&SubCa=";
+        Document dom = Jsoup.connect(URL + type.getSubCa()).get();
 
-		return result;
-	}
+        String cssQuery = ".Rk_gen2 .stit tbody tr";
+        Elements el = dom.select(cssQuery);
 
-	public void save(List<InterParkContent> dto) {
-		interparkRepository.saveAll(dto);
-	}
+        List<InterParkContent> result = new ArrayList<>();
+        for (Element element : el) {
+            String name = element.getElementsByClass("RKtxt").select("a").text().trim();
+            Elements addressUrl = element.getElementsByClass("Rkdate").select("a");
+            String location = addressUrl.text().trim();
 
-	public List<InterParkContent> findNewCrawlingData(InterparkType dtype) throws Exception {
-		List<InterParkContent> ls = crawling(dtype);
-		final List<String> tmp = interparkRepository.findInterparkcodeByDtype(dtype);
-		List<InterParkContent> result = ls.parallelStream()
-				.filter(f -> tmp.stream().noneMatch(m -> m.equals(f.getInterparkCode()))).collect(Collectors.toList());
-		result.parallelStream().forEach(InterParkContent::interparkConsumer);
+            String date = element.child(3).text();
+            String groupCode = element.select(".fw_bold a").attr("href");
 
-		ChromeOptions chromeOptions = new ChromeOptions();
-		chromeOptions.addArguments("--headless");
-		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
+            InterParkContent content = new InterParkContent(null, name, location, type, addressUrl.attr("href"), date, groupCode);
+            content.addInterparkCode(groupCode);
+            result.add(content);
+        }
 
-		final WebDriver driver = new ChromeDriver(chromeOptions);
-		for (InterParkContent obj : result) {
-			try {
-				if (dtype.equals(InterparkType.Ex)) {
-					this.findPriceDtypeEx(driver, obj);
-				} else {
-					this.findPrice(driver, obj);
-				}
-			} catch (Exception e) {
-				log.info(obj.toString());
-				log.error(e.getMessage());
-			}
-		}
-		return result;
-	}
+        if (el.size() != result.size()) {
+            throw new SizeNotMatchedException("인터파크에서 가져온 데이터와 가공한 데이터의 사이즈가 불일치합니다.");
+        }
 
-	public void findPrice(WebDriver driver, InterParkContent dto) {
-		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
-		log.debug(url);
-		driver.get(url);
-		dto.addInterparkCode(url);
-		List<WebElement> el = driver.findElement(By.id("divSalesPrice")).findElements(By.tagName("tr"));
-		List<Price> result = new ArrayList<>();
-		for (WebElement tr : el) {
-			List<WebElement> td = tr.findElements(By.tagName("td"));
-			if (td.size() == 3) {
-				Price price = new Price();
-				td.forEach(n -> {
-					final String text = n.getText().replaceAll(",|원", "");
-					if (text != null && !text.equals(" ")) {
-						Matcher matcher = Pattern.compile("(\\d[^%|층]{2,})+$").matcher(text);
-						if (matcher.find()) {
-							price.setPrice(Integer.parseInt(text.trim()));
-							log.debug("[{}] price : {}", dto.getInterparkCode(), price.getPrice());
-						} else {
-							price.setName(text.trim());
-							log.debug("[{}] name : {}", dto.getInterparkCode(), price.getName());
-						}
-					}
-				});
-				result.add(price);
-			} else if (td.size() == 1) {
-				td.forEach(n -> {
-					String[] text = n.getText().split("원");
-					for (String t : text) {
-						Price price = new Price();
-						t = t.replaceAll(",|▶", "");
-						Matcher matcher = Pattern.compile("(\\d[^%|층]{2,})+$").matcher(t);
-						if (matcher.find()) {
-							int startIdx = matcher.start();
-							String name = t.substring(0, startIdx).trim();
-							String priceValue = t.substring(startIdx, t.length()).trim();
-							price.setPrice(Integer.parseInt(priceValue));
-							price.setName(name);
-							log.debug("[{}] ul에서 추출한  {}", dto.getInterparkCode(), price.toString());
-						}
-						result.add(price);
-					}
-				});
-			}
-		}
-		for (Price price : result) {
-			dto.addPrice(price);
-		}
-	}
+        return result;
+    }
 
-	public void findPriceDtypeEx(WebDriver driver, InterParkContent dto) {
-		String url = "http://ticket.interpark.com/" + dto.getGroupCode();
-		log.debug(url);
-		driver.get(url);
-		dto.addInterparkCode(url);
-		driver.findElement(By.cssSelector("img[alt=\"가격상세보기\"]")).click();
-		List<Price> result = new ArrayList<>();
-		List<WebElement> tb = driver.switchTo().frame("ifrTabB").findElements(By.className("tb_lv2"));
-		for (WebElement webElement : tb) {
-			List<WebElement> tr = webElement.findElements(By.tagName("tr"));
-			tr.forEach(el -> {
-				String name = el.findElement(By.cssSelector("td:nth-child(1)")).getText();
-				String won = el.findElement(By.cssSelector("td:nth-child(2)")).getText().replaceAll(",|원", "");
-				Price price = new Price();
-				price.setName(name);
-				price.setPrice(Integer.parseInt(won));
-				log.debug(price.toString());
-				result.add(price);
-			});
-		}
-		for (Price price : result) {
-			dto.addPrice(price);
-		}
-	}
 
-	public List<InterParkContent> invalidDataDelete() {
-		List<InterParkContent> result = interparkRepository.findByEndDateBefore(LocalDateTime.now());
-		result.forEach(m -> {
-			m.setDeleteflag(DeleteFlag.Y);
-		});
-		interparkRepository.saveAll(result);
-		return result;
-	}
+    public void findPrice(WebDriver driver, InterParkContent content) {
+        String url = "http://ticket.interpark.com/" + content.getGroupCode();
+        log.debug(url);
+        driver.get(url);
+        content.addInterparkCode(url);
+        driver.findElement(By.cssSelector("img[alt=\"가격상세보기\"]")).click();
+        List<Price> result = new ArrayList<>();
+        List<WebElement> tb = driver.switchTo().frame("ifrTabB").findElements(By.className("tb_lv2"));
+        for (WebElement webElement : tb) {
+            List<WebElement> tr = webElement.findElements(By.tagName("tr"));
+            tr.forEach(el -> {
+                String name = el.findElement(By.cssSelector("td:nth-child(1)")).getText();
+                String won = el.findElement(By.cssSelector("td:nth-child(2)")).getText().replaceAll(",|원", "");
+                Price price = new Price();
+                price.setName(name);
+                price.setPrice(Integer.parseInt(won));
+                log.debug(price.toString());
+                result.add(price);
+            });
+        }
+        for (Price price : result) {
+            content.addPrice(price);
+        }
+    }
+
+    public List<InterParkContent> invalidDataDelete() {
+        List<InterParkContent> result = interparkRepository.findByEndDateBefore(LocalDateTime.now());
+        result.forEach(content -> {
+            content.setDeleteflag(DeleteFlag.Y);
+        });
+        interparkRepository.saveAll(result);
+        return result;
+    }
+
+    public void save(List<InterParkContent> dto) {
+        interparkRepository.saveAll(dto);
+    }
 }

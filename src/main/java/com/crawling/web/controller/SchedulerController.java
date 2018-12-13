@@ -12,8 +12,9 @@ public class SchedulerController {
 	private InterParkCrawlingScheduler scheduler;
 	
 	@GetMapping(value="/scheduler")
-	public void findNewData() throws Exception {
+	public String findNewData() throws Exception {
 		scheduler.crawlingInterparkData();
+		return "";
 	}
 	
 	@GetMapping(value="/scheduler/event/delete")
