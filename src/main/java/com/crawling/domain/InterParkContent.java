@@ -119,7 +119,8 @@ public class InterParkContent {
     }
 
     public void addImageFilePath() throws IOException {
-        this.imageFilePath = InterParkCrawler.saveImgFile("http://ticket.interpark.com/" + this.groupCode);
+        String imageRootPath = "http://ticket.interpark.com/";
+        this.imageFilePath = InterParkCrawler.saveImgFile(imageRootPath + this.groupCode);
     }
 
     public void setDeleteflag(DeleteFlag deleteflag) {
