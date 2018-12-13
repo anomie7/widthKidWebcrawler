@@ -14,9 +14,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -98,18 +95,12 @@ public class TestinterparkCrawler {
 
     @Test
     public void testFIndPrice() throws Exception {
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--headless");
-
-        System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
-        WebDriver driver = new ChromeDriver(chromeOptions);
-
         for (InterparkType dtype : InterparkType.values()) {
             List<InterParkContent> ls;
             ls = interparkCrawling.crawling(dtype).stream().limit(10).collect(Collectors.toList());
             for (InterParkContent interParkDTO : ls) {
                 try {
-                    interparkCrawling.findPrice(driver, interParkDTO);
+                    interparkCrawling.findPrice(interParkDTO);
                 } catch (Exception e) {
                     log.info(interParkDTO.toString());
                     log.error(e.getMessage());

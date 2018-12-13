@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
 import com.crawling.domain.*;
+import com.crawling.utill.WebDriveFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,8 +22,6 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +55,8 @@ public class InterParkCrawler {
         Document doc = Jsoup.connect(url).get();
         String imgUrl = doc.getElementsByClass("poster").select("img").attr("src");
 
-        log.debug(imgUrl);
-
-        String folderPath = "D:/imgFolder/" + LocalDate.now().format(dirFormatter) + "/";
+        final String rootPath = "D:/imgFolder/";
+        String folderPath = rootPath + LocalDate.now().format(dirFormatter) + "/";
         String ext = imgUrl.substring(imgUrl.lastIndexOf('.') + 1, imgUrl.length()); // 이미지 확장자 추출
         String fileName = LocalDateTime.now().format(fileNameFormatter) + "." + ext;
         String saveFilePath = folderPath + fileName;
@@ -75,22 +73,17 @@ public class InterParkCrawler {
 
     public List<InterParkContent> findNewCrawlingData(InterparkType type) throws Exception {
         List<InterParkContent> contents = crawling(type);
-        final List<String> existInterparkcodes = interparkRepository.findInterparkcodeByDtype(type);
+        final List<String> existCodes = interparkRepository.findInterparkcodeByDtype(type);
 
         List<InterParkContent> newContents;
         newContents = contents.parallelStream()
-                .filter(content -> existInterparkcodes.stream().noneMatch(existCode -> existCode.equals(content.getInterparkCode())))
+                .filter(content -> existCodes.stream().noneMatch(existCode -> existCode.equals(content.getInterparkCode())))
                 .collect(Collectors.toList());
         newContents.parallelStream().forEach(InterParkContent::addMembers);
 
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--headless");
-        System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
-
-        final WebDriver driver = new ChromeDriver(chromeOptions);
         for (InterParkContent newContent : newContents) {
             try {
-                this.findPrice(driver, newContent);
+                this.findPrice(newContent);
             } catch (Exception e) {
                 log.info(newContent.toString());
                 log.error(e.getMessage());
@@ -128,12 +121,15 @@ public class InterParkCrawler {
     }
 
 
-    public void findPrice(WebDriver driver, InterParkContent content) {
+    public void findPrice(InterParkContent content) {
+        final WebDriver driver = WebDriveFactory.getChromeDriver();
         String url = "http://ticket.interpark.com/" + content.getGroupCode();
+        log.debug("[ContentType]: {} [ContentName]: {}", content.getDtype().toString(), content.getName());
         log.debug(url);
         driver.get(url);
         content.addInterparkCode(url);
         driver.findElement(By.cssSelector("img[alt=\"가격상세보기\"]")).click();
+
         List<Price> result = new ArrayList<>();
         List<WebElement> tb = driver.switchTo().frame("ifrTabB").findElements(By.className("tb_lv2"));
         for (WebElement webElement : tb) {
