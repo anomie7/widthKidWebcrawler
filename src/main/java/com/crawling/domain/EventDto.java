@@ -25,7 +25,7 @@ public class EventDto {
 	@Builder.Default
 	private List<PriceDto> price = new ArrayList<>();
 
-	public static EventDto fromEntity(InterParkData entity) {
+	public static EventDto fromEntity(InterParkContent entity) {
 		EventDto dto = EventDto.builder()
 				.eventId(entity.getId())
 				.name(entity.getName())
