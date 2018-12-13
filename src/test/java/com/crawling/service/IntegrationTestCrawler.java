@@ -2,6 +2,7 @@ package com.crawling.service;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,10 @@ import com.crawling.repository.InterParkRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+@Ignore("통합테스트라 시간이 너무 오래 걸림(11m 18 s) 테스트 필요할 시에만 annotation 제거하고 실행할 것")
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {WebCrawlingPracticeApplication.class})
-@ActiveProfiles("test")//통합테스트므로 인메모리보다는 프로덕트와 동일한 환경에서 해야할듯..도커도 있으니깐 쉽게 가능할것임
+@ActiveProfiles("test")
 @Slf4j
 @Transactional
 public class IntegrationTestCrawler {
