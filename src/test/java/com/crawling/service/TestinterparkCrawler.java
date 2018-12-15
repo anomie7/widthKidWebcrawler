@@ -92,6 +92,8 @@ public class TestinterparkCrawler {
             e.printStackTrace();
         }
         assertEquals("저장한 이미지가 존재하지 않습니다.", true, new File(rootPath + fullFilePath).exists());
+
+        new File(rootPath + fullFilePath).delete();
     }
 
     @Test
