@@ -55,7 +55,7 @@ public class InterParkCrawler {
         Document doc = Jsoup.connect(url).get();
         String imgUrl = doc.getElementsByClass("poster").select("img").attr("src");
 
-        final String rootPath = "D:/imgFolder/";
+        final String rootPath = "/tmp/imgFolder/";
         String folderPath = rootPath + LocalDate.now().format(dirFormatter) + "/";
         String ext = imgUrl.substring(imgUrl.lastIndexOf('.') + 1, imgUrl.length()); // 이미지 확장자 추출
         String fileName = LocalDateTime.now().format(fileNameFormatter) + "." + ext;

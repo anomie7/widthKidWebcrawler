@@ -47,11 +47,17 @@ spring:
      ansi: 
       enabled: always
 #  datasource:
-#    sql-script-encoding: UTF-8     
+#    sql-script-encoding: UTF-8
 #    driver-class-name: org.h2.Driver
 #    url: jdbc:h2:tcp://localhost/~/test
 #    username: sa
-#    password: 
+#    password:
+#  datasource:
+#    platform: mariadb
+#    driver-class-name: org.mariadb.jdbc.Driver
+#    url: jdbc:mariadb://192.168.99.100:3306/test
+#    username: root
+#    password: 1234
 logging:
   level:
     root: info

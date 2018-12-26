@@ -84,13 +84,16 @@ public class TestinterparkCrawler {
     @Test
     public void testsaveImgFile() {
         String url = "http://ticket.interpark.com/Ticket/Goods/GoodsInfo.asp?GoodsCode=18013439";
-        String fullFilePath = "D:\\imgFolder/test.gif";
+        String rootPath = "/tmp";
+        String fullFilePath = "";
         try {
             fullFilePath = InterParkCrawler.saveImgFile(url);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertEquals("저장한 이미지가 존재하지 않습니다.", true, new File(fullFilePath).exists());
+        assertEquals("저장한 이미지가 존재하지 않습니다.", true, new File(rootPath + fullFilePath).exists());
+
+        new File(rootPath + fullFilePath).delete();
     }
 
     @Test
