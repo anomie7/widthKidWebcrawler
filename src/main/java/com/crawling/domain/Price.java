@@ -19,7 +19,7 @@ import lombok.ToString;
 @Getter @Setter
 @Entity @ToString
 @EqualsAndHashCode
-public class Price {
+public class Price extends BaseEntity{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name = "PRICE_ID")
