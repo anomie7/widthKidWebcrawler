@@ -26,6 +26,7 @@ public class Price extends BaseEntity{
 	private Long id;
 	private String name;
 	private int price;
+	private String extraInfo;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "INTERPARK_ID")
