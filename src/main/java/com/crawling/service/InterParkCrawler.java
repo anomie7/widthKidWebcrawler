@@ -131,19 +131,26 @@ public class InterParkCrawler {
         driver.findElement(By.cssSelector("img[alt=\"가격상세보기\"]")).click();
 
         List<Price> result = new ArrayList<>();
-        List<WebElement> tb = driver.switchTo().frame("ifrTabB").findElements(By.className("tb_lv2"));
-        for (WebElement webElement : tb) {
-            List<WebElement> tr = webElement.findElements(By.tagName("tr"));
-            tr.forEach(el -> {
-                String name = el.findElement(By.cssSelector("td:nth-child(1)")).getText();
-                String won = el.findElement(By.cssSelector("td:nth-child(2)")).getText().replaceAll(",|원", "");
-                Price price = new Price();
-                price.setName(name);
-                price.setPrice(Integer.parseInt(won));
-                log.debug(price.toString());
-                result.add(price);
-            });
+        WebElement tb_lv1 = driver.switchTo().frame("ifrTabB").findElement(By.className("tb_lv1"));
+        List<WebElement> trBunch = tb_lv1.findElements(By.cssSelector(".tb_lv1 > tbody > tr"));
+        for (WebElement tr: trBunch) {
+            final String extraInfo = tr.findElement(By.tagName("th")).getText();
+            List<WebElement> tb_lv2 = tr.findElements(By.className("tb_lv2"));
+            for (WebElement td : tb_lv2) {
+                List<WebElement> tb_lv2_child_tr = td.findElements(By.tagName("tr"));
+                tb_lv2_child_tr.forEach(el -> {
+                    String name = el.findElement(By.cssSelector("td:nth-child(1)")).getText();
+                    String won = el.findElement(By.cssSelector("td:nth-child(2)")).getText().replaceAll(",|원", "");
+                    Price price = new Price();
+                    price.setExtraInfo(extraInfo);
+                    price.setName(name);
+                    price.setPrice(Integer.parseInt(won));
+                    log.debug(price.toString());
+                    result.add(price);
+                });
+            }
         }
+
         for (Price price : result) {
             content.addPrice(price);
         }
