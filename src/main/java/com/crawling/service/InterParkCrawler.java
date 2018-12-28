@@ -131,23 +131,31 @@ public class InterParkCrawler {
         driver.findElement(By.cssSelector("img[alt=\"가격상세보기\"]")).click();
 
         List<Price> result = new ArrayList<>();
-        WebElement tb_lv1 = driver.switchTo().frame("ifrTabB").findElement(By.className("tb_lv1"));
-        List<WebElement> trBunch = tb_lv1.findElements(By.cssSelector(".tb_lv1 > tbody > tr"));
-        for (WebElement tr: trBunch) {
-            final String extraInfo = tr.findElement(By.tagName("th")).getText();
-            List<WebElement> tb_lv2 = tr.findElements(By.className("tb_lv2"));
-            for (WebElement td : tb_lv2) {
-                List<WebElement> tb_lv2_child_tr = td.findElements(By.tagName("tr"));
-                tb_lv2_child_tr.forEach(el -> {
-                    String name = el.findElement(By.cssSelector("td:nth-child(1)")).getText();
-                    String won = el.findElement(By.cssSelector("td:nth-child(2)")).getText().replaceAll(",|원", "");
-                    Price price = new Price();
-                    price.setExtraInfo(extraInfo);
-                    price.setName(name);
-                    price.setPrice(Integer.parseInt(won));
-                    log.debug(price.toString());
-                    result.add(price);
-                });
+        List<WebElement> wraps = driver.switchTo().frame("ifrTabB").findElements(By.className("SeatPrice_Wrap"));
+        for (WebElement wrap: wraps) {
+            final String ticketInfo = wrap.findElement(By.className("pr_Seat")).getText();
+            List<WebElement> tb_lv1Bunch = wrap.findElements(By.className("tb_lv1"));
+            for (WebElement tb_lv1 : tb_lv1Bunch) {
+                List<WebElement> trBunch = tb_lv1.findElements(By.cssSelector(".tb_lv1 > tbody > tr"));
+                for (WebElement tr: trBunch) {
+                    final String extraInfo = tr.findElement(By.tagName("th")).getText();
+                    List<WebElement> tb_lv2 = tr.findElements(By.className("tb_lv2"));
+                    for (WebElement td : tb_lv2) {
+                        List<WebElement> tb_lv2_child_tr = td.findElements(By.tagName("tr"));
+                        tb_lv2_child_tr.forEach(el -> {
+                            String name = el.findElement(By.cssSelector("td:nth-child(1)")).getText();
+                            String won = el.findElement(By.cssSelector("td:nth-child(2)")).getText().replaceAll(",|원", "");
+                            Price price = new Price();
+                            price.setExtraInfo(extraInfo);
+                            price.setName(name);
+                            price.setPrice(Integer.parseInt(won));
+                            price.setTicketInfo(ticketInfo);
+                            if(price.getExtraInfo().equals("기본가")) price.setDefaultPrice(true);
+                            log.debug(price.toString());
+                            result.add(price);
+                        });
+                    }
+                }
             }
         }
 
